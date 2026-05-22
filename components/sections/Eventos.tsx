@@ -15,23 +15,55 @@ export function Eventos() {
       aria-labelledby="eventos-title"
       className="relative isolate overflow-hidden bg-[var(--color-negro)] py-24 sm:py-32 lg:py-40"
     >
-      {/* event bg photo */}
-      <Image
-        src="/eventos/evento-cold-coffee-club.jpg"
-        alt=""
-        aria-hidden="true"
-        fill
-        priority={false}
-        sizes="100vw"
-        className="absolute inset-0 -z-30 object-cover object-center"
-      />
-      {/* dark gradient overlay for legibility */}
+      {/* MOBILE/TABLET: full bg with photo + dark gradient overlay */}
+      <div className="absolute inset-0 -z-30 lg:hidden">
+        <Image
+          src="/eventos/evento-cold-coffee-club.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority={false}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-20"
+        className="absolute inset-0 -z-20 lg:hidden"
         style={{
           background:
             "linear-gradient(180deg, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.75) 45%, rgba(10,10,10,0.92) 100%), radial-gradient(70% 50% at 85% 25%, rgba(241,28,31,0.45) 0%, transparent 65%)",
+        }}
+      />
+
+      {/* DESKTOP: split layout — photo on right half, text on left */}
+      <div className="absolute inset-y-0 right-0 hidden w-[55%] -z-30 lg:block">
+        <Image
+          src="/eventos/evento-cold-coffee-club.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority={false}
+          sizes="55vw"
+          className="object-cover object-[center_28%]"
+        />
+        {/* fade left edge into black */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, #0A0A0A 0%, rgba(10,10,10,0.85) 18%, rgba(10,10,10,0.25) 45%, rgba(10,10,10,0.15) 100%)",
+          }}
+        />
+      </div>
+      {/* desktop full-section red-tint accent */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-20 hidden lg:block"
+        style={{
+          background:
+            "radial-gradient(55% 60% at 80% 30%, rgba(241,28,31,0.32) 0%, transparent 70%)",
         }}
       />
       {/* spotlights */}
@@ -45,21 +77,7 @@ export function Eventos() {
       />
       <Grain opacity={0.14} blendMode="overlay" />
 
-      {/* floating bag */}
-      <motion.div
-        aria-hidden="true"
-        animate={{ y: [0, -12, 0], rotate: [-8, -4, -8] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        className="pointer-events-none absolute -right-10 top-10 hidden lg:block"
-      >
-        <Image
-          src="/sabores/bolsa-clasico.png"
-          alt=""
-          width={300}
-          height={500}
-          className="h-auto w-[240px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.7)]"
-        />
-      </motion.div>
+      {/* (removed floating bolsa on desktop — the event photo takes that side now) */}
 
       <div className="container-q relative z-10">
         <motion.div
@@ -67,7 +85,7 @@ export function Eventos() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.7 }}
-          className="mx-auto max-w-3xl text-center text-[var(--color-crema)]"
+          className="mx-auto max-w-3xl text-center text-[var(--color-crema)] lg:mx-0 lg:max-w-xl lg:text-left"
         >
           <span className="inline-flex items-center gap-2 rounded-full bg-[var(--color-rojo)]/25 px-4 py-1.5 text-caption text-[var(--color-rojo-neon)] ring-1 ring-[var(--color-rojo)]/50 backdrop-blur">
             <PartyPopper className="size-3.5" strokeWidth={2.5} />
@@ -101,7 +119,7 @@ export function Eventos() {
             </Button>
           </div>
 
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-caption text-[var(--color-crema)]/60">
+          <div className="mt-14 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-caption text-[var(--color-crema)]/60 lg:justify-start">
             <span>Night Fest</span>
             <span className="size-1 rounded-full bg-[var(--color-crema)]/30" />
             <span>Bad Sisters</span>

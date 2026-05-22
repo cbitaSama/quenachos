@@ -146,8 +146,8 @@ export function Hero({ sabores }: Props) {
 
       {/* ROW 2 — MAIN (ghost + bolsa + decorativos) */}
       <div className="relative z-10 grid grid-rows-[auto_auto_1fr] overflow-hidden">
-        {/* ghost text */}
-        <div className="pointer-events-none relative z-10 flex justify-center pt-2 sm:pt-4">
+        {/* ghost text — z-20 so it sits ABOVE the bolsa when sizes overlap */}
+        <div className="pointer-events-none relative z-20 flex justify-center pt-2 sm:pt-4">
           <AnimatePresence mode="wait">
             <motion.h1
               key={`name-${active.id}`}
@@ -174,8 +174,8 @@ export function Hero({ sabores }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* subtitle */}
-        <div className="relative z-10 flex justify-center px-4">
+        {/* subtitle — z-20 to keep above bolsa too */}
+        <div className="relative z-20 flex justify-center px-4">
           <AnimatePresence mode="wait">
             <motion.p
               key={`sub-${active.id}`}
@@ -245,8 +245,8 @@ export function Hero({ sabores }: Props) {
                 height={700}
                 priority
                 draggable={false}
-                sizes="(max-width: 640px) 65vw, (max-width: 1024px) 42vw, 32vw"
-                className="pointer-events-none mx-auto block h-auto w-[62vw] max-w-[300px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)] sm:w-[42vw] sm:max-w-[380px] lg:w-[32vw] lg:max-w-[440px]"
+                sizes="(max-width: 640px) 62vw, (max-width: 1024px) 38vw, 26vw"
+                className="pointer-events-none mx-auto block h-auto w-[62vw] max-w-[280px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)] sm:w-[38vw] sm:max-w-[330px] lg:w-[26vw] lg:max-w-[360px]"
               />
               <div
                 aria-hidden="true"
