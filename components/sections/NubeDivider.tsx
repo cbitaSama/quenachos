@@ -63,7 +63,7 @@ export function NubeDivider({
     <div
       aria-hidden="true"
       role="presentation"
-      className={`pointer-events-none relative -mt-[7vw] block h-[18vw] min-h-[120px] w-full sm:-mt-[6vw] sm:h-[16vw] lg:-mt-[4vw] lg:h-[12vw] ${className}`}
+      className={`pointer-events-none relative -mt-[120px] block h-[120px] w-full sm:-mt-[130px] sm:h-[130px] lg:-mt-[140px] lg:h-[140px] ${className}`}
       style={{ transform: flip ? "rotate(180deg)" : undefined }}
     >
       <svg

@@ -86,7 +86,7 @@ export function Hero({ sabores }: Props) {
       aria-label="Sabores Que Nachos"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      className="relative isolate grid h-[100dvh] min-h-[640px] w-full grid-rows-[auto_1fr_auto] overflow-hidden"
+      className="relative isolate grid h-[calc(100dvh+140px)] min-h-[780px] w-full grid-rows-[auto_1fr_auto_140px] overflow-hidden sm:h-[calc(100dvh+150px)] sm:grid-rows-[auto_1fr_auto_150px] lg:h-[calc(100dvh+160px)] lg:grid-rows-[auto_1fr_auto_160px]"
       style={{ backgroundColor: active.colorFondo }}
     >
       {/* color crossfade layer */}
