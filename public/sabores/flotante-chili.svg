@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <defs>
+    <linearGradient id="chiliGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF3D3D"/>
+      <stop offset="60%" stop-color="#D9282F"/>
+      <stop offset="100%" stop-color="#A01D22"/>
+    </linearGradient>
+    <linearGradient id="chiliShine" x1="0%" y1="0%" x2="50%" y2="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="chiliStem" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2D5A2D"/>
+      <stop offset="100%" stop-color="#4E8C3A"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(300 320) rotate(-22)">
+    <!-- body -->
+    <path d="M -85 -160 C -120 -100, -150 0, -110 110 C -70 200, 60 220, 110 150 C 170 70, 110 -70, 40 -150 C 10 -185, -55 -195, -85 -160 Z"
+          fill="url(#chiliGrad)"/>
+    <!-- shine highlight -->
+    <path d="M -70 -130 C -95 -80, -110 -10, -85 80 C -68 100, -55 90, -58 50 C -62 -10, -50 -80, -32 -130 C -45 -150, -62 -148, -70 -130 Z"
+          fill="url(#chiliShine)"/>
+    <!-- stem cup -->
+    <path d="M -90 -160 C -75 -190, -30 -200, 5 -190 C 30 -184, 35 -170, 25 -160 C 0 -150, -55 -150, -90 -160 Z"
+          fill="#3E7A2E"/>
+    <!-- stem -->
+    <path d="M -25 -190 C -22 -215, -8 -240, 12 -250 C 28 -258, 30 -245, 18 -232 C 4 -220, -5 -205, -10 -188 Z"
+          fill="url(#chiliStem)"/>
+    <!-- highlight on stem -->
+    <ellipse cx="-15" cy="-205" rx="2.5" ry="14" fill="#86C25C" opacity="0.7"/>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750">
+  <defs>
+    <linearGradient id="pGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1C1917"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="750" fill="url(#pGrad)"/>
+  <!-- tv glow -->
+  <g opacity="0.7">
+    <rect x="120" y="200" width="360" height="200" rx="12" fill="#D9282F"/>
+    <rect x="135" y="215" width="330" height="170" rx="8" fill="#FFB3B5" opacity="0.4"/>
+  </g>
+  <!-- couch silhouette -->
+  <g transform="translate(0 440)" fill="#FAF7F2" opacity="0.15">
+    <rect x="50" y="80" width="500" height="180" rx="40"/>
+    <rect x="80" y="40" width="180" height="120" rx="30"/>
+    <rect x="340" y="40" width="180" height="120" rx="30"/>
+  </g>
+  <text x="300" y="625" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="48" font-weight="900" letter-spacing="-0.02em">PELI &amp; NACHOS</text>
+  <text x="300" y="670" text-anchor="middle" fill="#A3E635" font-family="Arial, sans-serif" font-size="14" letter-spacing="0.3em">EL COMBO PERFECTO</text>
+</svg>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750">
+  <defs>
+    <linearGradient id="gGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1C1917"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="750" fill="url(#gGrad)"/>
+  <g opacity="0.12">
+    <circle cx="120" cy="200" r="220" fill="#A3E635"/>
+  </g>
+  <!-- dumbbell -->
+  <g transform="translate(300 380)" fill="#A3E635">
+    <rect x="-180" y="-30" width="40" height="60" rx="6"/>
+    <rect x="140" y="-30" width="40" height="60" rx="6"/>
+    <rect x="-160" y="-15" width="320" height="30" rx="4"/>
+    <rect x="-220" y="-18" width="20" height="36" rx="4"/>
+    <rect x="200" y="-18" width="20" height="36" rx="4"/>
+  </g>
+  <text x="300" y="555" text-anchor="middle" fill="#A3E635" font-family="Arial, sans-serif" font-size="80" font-weight="900">18g</text>
+  <text x="300" y="600" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="0.05em">PROTEÍNA POST-ENTRENO</text>
+  <text x="300" y="680" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="13" letter-spacing="0.4em" opacity="0.55">SIN CULPA</text>
+</svg>

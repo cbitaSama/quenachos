@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750">
+  <defs>
+    <linearGradient id="rGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFB3B5"/>
+      <stop offset="60%" stop-color="#D9282F"/>
+      <stop offset="100%" stop-color="#A01D22"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="750" fill="url(#rGrad)"/>
+  <g opacity="0.08">
+    <circle cx="500" cy="120" r="200" fill="#FAF7F2"/>
+    <circle cx="100" cy="640" r="160" fill="#FAF7F2"/>
+  </g>
+  <!-- runner silhouette -->
+  <g transform="translate(300 430)" fill="#0A0A0A" opacity="0.9">
+    <circle cx="0" cy="-100" r="28"/>
+    <path d="M -10 -75 L 28 -50 L 50 -10 L 38 -8 L 15 -40 L 5 -10 L 30 60 L 22 65 L -5 5 L -25 50 L -35 45 L -18 -15 L -45 -20 L -25 -55 Z"/>
+  </g>
+  <text x="300" y="650" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="34" font-weight="800" letter-spacing="0.05em">RUNNING CLUB</text>
+  <text x="300" y="685" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="14" letter-spacing="0.4em" opacity="0.7">#TEAMQUENACHOS</text>
+</svg>

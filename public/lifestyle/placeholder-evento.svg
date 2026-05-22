@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 750" width="600" height="750">
+  <defs>
+    <linearGradient id="eGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D9282F"/>
+      <stop offset="50%" stop-color="#FF1F1F"/>
+      <stop offset="100%" stop-color="#0A0A0A"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="750" fill="url(#eGrad)"/>
+  <!-- spotlights -->
+  <g opacity="0.18">
+    <polygon points="100,0 250,800 50,800" fill="#FAF7F2"/>
+    <polygon points="500,0 350,800 550,800" fill="#FAF7F2"/>
+  </g>
+  <!-- crowd silhouette -->
+  <g transform="translate(0 550)" fill="#0A0A0A" opacity="0.8">
+    <circle cx="60" cy="80" r="22"/><rect x="38" y="100" width="44" height="100" rx="4"/>
+    <circle cx="130" cy="70" r="24"/><rect x="106" y="90" width="48" height="110" rx="4"/>
+    <circle cx="210" cy="85" r="22"/><rect x="188" y="105" width="44" height="100" rx="4"/>
+    <circle cx="290" cy="65" r="26"/><rect x="264" y="88" width="52" height="112" rx="4"/>
+    <circle cx="370" cy="80" r="22"/><rect x="348" y="100" width="44" height="100" rx="4"/>
+    <circle cx="450" cy="70" r="24"/><rect x="426" y="90" width="48" height="110" rx="4"/>
+    <circle cx="540" cy="82" r="22"/><rect x="518" y="102" width="44" height="100" rx="4"/>
+  </g>
+  <text x="300" y="280" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="64" font-weight="900" letter-spacing="-0.02em">EVENTOS</text>
+  <text x="300" y="340" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="18" letter-spacing="0.3em" opacity="0.7">NIGHT FEST · BAD SISTERS</text>
+  <text x="300" y="370" text-anchor="middle" fill="#FAF7F2" font-family="Arial, sans-serif" font-size="18" letter-spacing="0.3em" opacity="0.7">COLD COFFEE CLUB</text>
+</svg>

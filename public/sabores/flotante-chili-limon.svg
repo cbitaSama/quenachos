@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 600" width="700" height="600">
+  <defs>
+    <linearGradient id="cl-chili" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF3D3D"/>
+      <stop offset="60%" stop-color="#D9282F"/>
+      <stop offset="100%" stop-color="#A01D22"/>
+    </linearGradient>
+    <radialGradient id="cl-limon" cx="35%" cy="30%" r="65%">
+      <stop offset="0%" stop-color="#F4FF8A"/>
+      <stop offset="50%" stop-color="#C8E03A"/>
+      <stop offset="100%" stop-color="#7CA80D"/>
+    </radialGradient>
+    <linearGradient id="cl-shine" x1="0%" y1="0%" x2="60%" y2="60%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="cl-stem" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2D5A2D"/>
+      <stop offset="100%" stop-color="#4E8C3A"/>
+    </linearGradient>
+  </defs>
+  <!-- limon back -->
+  <g transform="translate(220 280) rotate(-12)">
+    <ellipse cx="0" cy="0" rx="135" ry="115" fill="url(#cl-limon)"/>
+    <ellipse cx="-40" cy="-40" rx="50" ry="22" fill="#F4FF8A" opacity="0.65"/>
+    <!-- small leaf -->
+    <path d="M -25 -110 C -10 -135, 20 -145, 35 -132 C 25 -120, 5 -112, -15 -100 Z" fill="#4E8C3A"/>
+  </g>
+  <!-- chili front -->
+  <g transform="translate(440 340) rotate(15)">
+    <path d="M -75 -140 C -110 -85, -135 5, -95 105 C -55 185, 60 195, 105 130 C 155 60, 100 -60, 35 -135 C 5 -165, -50 -170, -75 -140 Z"
+          fill="url(#cl-chili)"/>
+    <path d="M -60 -110 C -85 -65, -100 0, -75 70 C -60 88, -48 80, -50 45 C -54 -8, -42 -65, -25 -110 C -38 -125, -53 -123, -60 -110 Z"
+          fill="url(#cl-shine)"/>
+    <path d="M -80 -140 C -65 -165, -25 -175, 8 -168 C 30 -162, 32 -150, 22 -142 C 0 -134, -50 -132, -80 -140 Z"
+          fill="#3E7A2E"/>
+    <path d="M -18 -168 C -15 -190, -2 -212, 18 -222 C 30 -228, 30 -215, 20 -204 C 8 -194, 0 -180, -5 -165 Z"
+          fill="url(#cl-stem)"/>
+  </g>
+</svg>

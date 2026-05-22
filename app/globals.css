@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@theme {
+  /* Marca */
+  --color-rojo: #f11c1f;
+  --color-rojo-oscuro: #c81014;
+  --color-rojo-neon: #ff1f1f;
+  --color-negro: #0a0a0a;
+  --color-crema: #faf7f2;
+  --color-verde-lima: #a3e635;
+
+  /* Neutros */
+  --color-gris-100: #f5f5f4;
+  --color-gris-300: #d6d3d1;
+  --color-gris-500: #78716c;
+  --color-gris-900: #1c1917;
+
+  /* Por sabor — tokens semánticos */
+  --color-clasico-fondo: var(--color-rojo);
+  --color-clasico-texto: var(--color-crema);
+  --color-limon-fondo: var(--color-negro);
+  --color-limon-texto: var(--color-verde-lima);
+  --color-picante-fondo: var(--color-negro);
+  --color-picante-texto: var(--color-rojo-neon);
+  --color-limon-picante-fondo: var(--color-negro);
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.18);
+  --shadow-rojo-glow: 0 0 40px rgba(217, 40, 47, 0.35);
+
+  /* Fonts (set by next/font in layout) */
+  --font-display: var(--font-anton), "Anton", system-ui, sans-serif;
+  --font-body: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-script: var(--font-script), "Bagel Fat One", system-ui, sans-serif;
+
+  /* Radios */
+  --radius-card: 1.5rem;
+  --radius-card-lg: 2rem;
+  --radius-card-xl: 2.5rem;
+}
+
+/* --------- base layer --------- */
+html {
+  scroll-behavior: smooth;
+  background: var(--color-crema);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-crema);
+  color: var(--color-negro);
+  overscroll-behavior: none;
+  font-feature-settings: "ss01", "cv11";
+}
+
+/* selection */
+::selection {
+  background: var(--color-rojo);
+  color: var(--color-crema);
+}
+
+/* focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-rojo);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* --------- utilities --------- */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+
+.font-script {
+  font-family: var(--font-script);
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+.text-display-xl {
+  font-size: clamp(80px, 25vw, 380px);
+  line-height: 0.86;
+  letter-spacing: -0.04em;
+}
+
+.text-display-lg {
+  font-size: clamp(48px, 12vw, 132px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.text-display-md {
+  font-size: clamp(32px, 6vw, 80px);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.text-display-sm {
+  font-size: clamp(28px, 4.5vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.text-body-xl {
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.45;
+}
+.text-body-lg {
+  font-size: clamp(16px, 1.8vw, 18px);
+  line-height: 1.6;
+}
+.text-body-md {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.text-body-sm {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.text-caption {
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* container helper */
+.container-q {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .container-q {
+    padding-inline: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .container-q {
+    padding-inline: 3rem;
+  }
+}
+
+/* sticky tape effect */
+.tape {
+  position: relative;
+}
+.tape::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  width: 70px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  pointer-events: none;
+}
+
+/* grain overlay */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.12;
+}
+
+/* marquee container */
+.marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 8%,
+    black 92%,
+    transparent
+  );
+}
+
+/* hide scrollbar on horizontal scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* sticker hover */
+.sticker {
+  transition: transform 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sticker:hover {
+  transform: rotate(-2deg) scale(1.03);
+}
+
+/* glow on hover */
+.glow-rojo:hover {
+  box-shadow: 0 0 40px rgba(217, 40, 47, 0.45),
+    0 0 80px rgba(217, 40, 47, 0.18);
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
