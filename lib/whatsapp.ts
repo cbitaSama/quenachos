@@ -12,5 +12,19 @@ export const MENSAJES = {
   evento:
     "¡Hola! Quiero llevar Que Nachos a un evento. ¿Me cuentan opciones y precios?",
   recojo: "Hola, quiero coordinar un recojo en el punto de Santa Cruz.",
-  pack: "Hola, quiero un combo de los 4 sabores 🧀🍋🌶️",
+  pack: "Hola, quiero un combo de los 3 sabores 🧀🍋🌶️",
+  carrito: (
+    items: { nombre: string; cantidad: number; precio: number | null }[],
+    total: number,
+  ) => {
+    const lineas = items
+      .map((i) => {
+        const sub =
+          i.precio != null ? ` — Bs ${i.precio * i.cantidad}` : "";
+        return `• ${i.nombre} x${i.cantidad}${sub}`;
+      })
+      .join("\n");
+    const totalLinea = total > 0 ? `\n\n*Total: Bs ${total}*` : "";
+    return `¡Hola! Quiero hacer este pedido de Que Nachos 🌶️\n\n${lineas}${totalLinea}\n\n¿Me confirman disponibilidad y coordinamos el recojo? 🙌`;
+  },
 };

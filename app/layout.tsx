@@ -3,6 +3,9 @@ import { Anton, Inter, Bagel_Fat_One } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WhatsAppFAB } from "@/components/ui/WhatsAppFAB";
+import { CartProvider } from "@/lib/cart/CartContext";
+import { CartButton } from "@/components/cart/CartButton";
+import { CartSheet } from "@/components/cart/CartSheet";
 import { MARCA } from "@/lib/data/marca";
 import "./globals.css";
 
@@ -104,8 +107,12 @@ export default function RootLayout({
       className={`${anton.variable} ${inter.variable} ${bagel.variable} antialiased`}
     >
       <body className="min-h-screen flex flex-col bg-[var(--color-crema)] text-[var(--color-negro)]">
-        {children}
-        <WhatsAppFAB />
+        <CartProvider>
+          {children}
+          <CartButton />
+          <CartSheet />
+          <WhatsAppFAB />
+        </CartProvider>
         <Analytics />
         <SpeedInsights />
       </body>

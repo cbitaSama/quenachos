@@ -5,7 +5,10 @@ type EventName =
   | "sabor_view"
   | "pickup_directions"
   | "qr_scan"
-  | "event_inquiry";
+  | "event_inquiry"
+  | "cart_add"
+  | "cart_remove"
+  | "checkout_start";
 
 export function trackEvent(
   name: EventName,

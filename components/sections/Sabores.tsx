@@ -7,11 +7,12 @@ import {
   useTransform,
 } from "motion/react";
 import Image from "next/image";
-import { useRef, type MouseEvent } from "react";
-import { ArrowRight } from "lucide-react";
+import { useRef, useState, type MouseEvent } from "react";
+import { ArrowRight, Check, Plus } from "lucide-react";
 import type { Sabor } from "@/lib/types";
 import { whatsappLink, MENSAJES } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/analytics";
+import { useCart } from "@/lib/cart/CartContext";
 
 type Props = { sabores: Sabor[] };
 
@@ -31,7 +32,7 @@ export function Sabores({ sabores }: Props) {
           className="mx-auto max-w-3xl text-center"
         >
           <span className="text-caption text-[var(--color-rojo)]">
-            Los cuatro
+            Los tres
           </span>
           <h2
             id="sabores-title"
@@ -43,7 +44,7 @@ export function Sabores({ sabores }: Props) {
           </h2>
         </motion.div>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div className="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {sabores.map((sabor, i) => (
             <SaborCard key={sabor.id} sabor={sabor} index={i} />
           ))}
@@ -58,7 +59,7 @@ export function Sabores({ sabores }: Props) {
           className="mt-12 flex flex-col items-center gap-3 text-center"
         >
           <p className="text-body-md text-[var(--color-gris-500)]">
-            ¿No sabés cuál? Probá los cuatro.
+            ¿No sabés cuál? Probá los tres.
           </p>
           <a
             href={whatsappLink(MENSAJES.pack)}
@@ -67,7 +68,7 @@ export function Sabores({ sabores }: Props) {
             onClick={() => trackEvent("whatsapp_click", { source: "sabores_combo" })}
             className="group inline-flex items-center gap-2 font-semibold text-[var(--color-rojo)] underline decoration-[var(--color-rojo)]/30 decoration-2 underline-offset-4 transition-colors hover:decoration-[var(--color-rojo)]"
           >
-            Pedí el combo de los 4
+            Pedí el combo de los 3
             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" strokeWidth={2.5} />
           </a>
         </motion.div>
@@ -83,6 +84,14 @@ function SaborCard({ sabor, index }: { sabor: Sabor; index: number }) {
   const rotateX = useTransform(y, [-100, 100], [8, -8]);
   const rotateY = useTransform(x, [-100, 100], [-8, 8]);
   const shouldReduceMotion = useReducedMotion();
+  const { add } = useCart();
+  const [justAdded, setJustAdded] = useState(false);
+
+  const onAdd = () => {
+    add(sabor);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1300);
+  };
 
   const onMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (shouldReduceMotion) return;
@@ -177,33 +186,44 @@ function SaborCard({ sabor, index }: { sabor: Sabor; index: number }) {
 
         {/* footer row */}
         <div className="mt-auto flex items-center justify-between gap-3">
-          <span
-            className="inline-flex items-center rounded-full px-3 py-1.5 text-caption"
+          <div className="flex flex-col">
+            {sabor.precio != null && (
+              <span
+                className="font-display text-2xl leading-none"
+                style={{ color: sabor.colorTexto }}
+              >
+                Bs {sabor.precio}
+              </span>
+            )}
+            <span
+              className="mt-1 text-caption"
+              style={{ color: `${sabor.colorTexto}99` }}
+            >
+              {sabor.proteinaG}g proteína · 60g
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-label={`Agregar ${sabor.nombre} al pedido`}
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition-transform hover:scale-[1.04] active:scale-95"
             style={{
-              backgroundColor: `${sabor.colorTexto}1a`,
-              color: sabor.colorTexto,
-              border: `1px solid ${sabor.colorTexto}33`,
+              backgroundColor: sabor.colorTexto,
+              color: sabor.colorFondo,
             }}
           >
-            {sabor.proteinaG}g proteína
-          </span>
-          <a
-            href={whatsappLink(MENSAJES.porSabor(sabor.nombre))}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() =>
-              trackEvent("whatsapp_click", {
-                source: "sabor_card",
-                sabor: sabor.id,
-              })
-            }
-            aria-label={`Pedir ${sabor.nombre} por WhatsApp`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold transition-transform hover:translate-x-1"
-            style={{ color: sabor.colorTexto }}
-          >
-            Pedir
-            <ArrowRight className="size-4" strokeWidth={2.5} />
-          </a>
+            {justAdded ? (
+              <>
+                <Check className="size-4" strokeWidth={3} />
+                Agregado
+              </>
+            ) : (
+              <>
+                <Plus className="size-4" strokeWidth={3} />
+                Agregar
+              </>
+            )}
+          </button>
         </div>
       </div>
     </motion.div>

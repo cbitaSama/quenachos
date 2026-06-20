@@ -129,7 +129,7 @@ export async function GET() {
               18g PROTEÍNA
             </span>
             <span style={{ opacity: 0.7 }}>·</span>
-            <span>4 sabores</span>
+            <span>3 sabores</span>
             <span style={{ opacity: 0.7 }}>·</span>
             <span>Hecho en Bolivia 🇧🇴</span>
           </div>

@@ -3,11 +3,12 @@ import type { Sabor } from "@/lib/types";
 export const SABORES: Sabor[] = [
   {
     id: "clasico",
-    nombre: "Clásico",
+    nombre: "Tradicional",
     subtitulo: "el confiable",
     emoji: "🧀",
     descripcionCorta:
       "El que nunca falla. Crocante, salado, perfecto para todo momento.",
+    precio: 30,
     proteinaG: 18,
     colorTexto: "#FAF7F2",
     colorFondo: "#F11C1F",
@@ -24,6 +25,7 @@ export const SABORES: Sabor[] = [
     emoji: "🍋",
     descripcionCorta:
       "Fresco, cítrico, con esa chispa ácida que te despierta el antojo.",
+    precio: 35,
     proteinaG: 18,
     colorTexto: "#A3E635",
     colorFondo: "#0A0A0A",
@@ -34,35 +36,20 @@ export const SABORES: Sabor[] = [
     activo: true,
   },
   {
-    id: "picante",
-    nombre: "Picante",
-    subtitulo: "el que se pasa 😏",
-    emoji: "🌶️",
-    descripcionCorta:
-      "Para los que les gusta el calorcito. Atrevido, sin miedo, con fuego.",
-    proteinaG: 18,
-    colorTexto: "#FF1F1F",
-    colorFondo: "#0A0A0A",
-    colorAcento: "#FAF7F2",
-    imagenBolsa: "/sabores/bolsa-picante.png",
-    decorativo: "/sabores/flotante-chili.svg",
-    orden: 3,
-    activo: true,
-  },
-  {
     id: "limon-picante",
     nombre: "Limón Picante",
     subtitulo: "el que no se decide",
     emoji: "🌶️🍋",
     descripcionCorta:
       "Lo mejor de los dos mundos: cítrico al inicio, fuego al final.",
+    precio: 35,
     proteinaG: 18,
     colorTexto: "#A3E635",
     colorFondo: "#0A0A0A",
     colorAcento: "#FF1F1F",
     imagenBolsa: "/sabores/bolsa-limon-picante.png",
     decorativo: "/sabores/flotante-chili-limon.svg",
-    orden: 4,
+    orden: 3,
     activo: true,
   },
 ];

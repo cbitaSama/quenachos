@@ -14,7 +14,7 @@ const CARDS = [
       </>
     ),
     body:
-      "Pechuga de pollo 100% seleccionada. Cada bolsa te da la proteína de una porción completa, sin batidos ni polvos raros.",
+      "Pechuga de pollo 100% seleccionada: 18.37 g de proteína y solo 124.6 kcal por bolsa de 60 g. Sin batidos ni polvos raros.",
     color: "var(--color-rojo)",
     accent: "bg-[var(--color-rojo)]",
   },
@@ -110,7 +110,47 @@ export function PorQue() {
             );
           })}
         </div>
+
+        {/* Tabla nutricional oficial (por bolsa de 60 g) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto mt-10 max-w-4xl"
+        >
+          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-[var(--color-negro)]/10 bg-white px-6 py-6 sm:flex-row sm:justify-between sm:px-10">
+            <div className="text-center sm:text-left">
+              <p className="text-caption text-[var(--color-rojo)]">
+                Tabla nutricional
+              </p>
+              <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
+                Por bolsa de 60 g · sin gluten
+              </p>
+            </div>
+            <dl className="grid grid-cols-3 gap-x-6 gap-y-3 text-center sm:grid-cols-5 sm:gap-x-8">
+              {NUTRICION.map((n) => (
+                <div key={n.label}>
+                  <dt className="text-caption text-[var(--color-gris-500)]">
+                    {n.label}
+                  </dt>
+                  <dd className="font-display text-[clamp(20px,2.4vw,30px)] leading-none text-[var(--color-negro)]">
+                    {n.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
 }
+
+const NUTRICION = [
+  { label: "Proteína", value: "18.37g" },
+  { label: "Calorías", value: "124.6" },
+  { label: "Carbos", value: "0.9g" },
+  { label: "Fibra", value: "0.3g" },
+  { label: "Grasa", value: "5.38g" },
+];

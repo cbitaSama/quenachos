@@ -1,4 +1,4 @@
-export type SaborId = "clasico" | "limon" | "picante" | "limon-picante";
+export type SaborId = "clasico" | "limon" | "limon-picante";
 
 export type Sabor = {
   id: SaborId;
@@ -15,6 +15,13 @@ export type Sabor = {
   decorativo: string;
   orden: number;
   activo: boolean;
+};
+
+export type CartItem = {
+  id: SaborId;
+  nombre: string;
+  precio: number | null;
+  cantidad: number;
 };
 
 export type FotoLifestyle = {

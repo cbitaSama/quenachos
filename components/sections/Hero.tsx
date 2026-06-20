@@ -7,7 +7,7 @@ import {
 } from "motion/react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Sabor } from "@/lib/types";
 import { Grain } from "@/components/ui/Grain";
 import { Logo } from "@/components/ui/Logo";
@@ -191,75 +191,92 @@ export function Hero({ sabores }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* bolsa + decorativos */}
-        <div className="relative flex min-h-0 items-center justify-center">
-          <AnimatePresence mode="popLayout">
-            <motion.div
-              key={`bag-${active.id}`}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -60) next();
-                else if (info.offset.x > 60) prev();
-              }}
-              initial={
-                shouldReduceMotion
-                  ? { opacity: 0 }
-                  : {
-                      opacity: 0,
-                      x: 80 * direction,
-                      scale: 0.9,
-                      rotate: 4 * direction,
-                      filter: "blur(8px)",
-                    }
-              }
-              animate={{
-                opacity: 1,
-                x: 0,
-                scale: 1,
-                rotate: 0,
-                filter: "blur(0px)",
-              }}
-              exit={
-                shouldReduceMotion
-                  ? { opacity: 0 }
-                  : {
-                      opacity: 0,
-                      x: -60 * direction,
-                      scale: 0.92,
-                      rotate: -4 * direction,
-                      filter: "blur(8px)",
-                    }
-              }
-              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              whileHover={
-                shouldReduceMotion ? undefined : { scale: 1.04, rotate: -1.5 }
-              }
-              className="relative z-10 cursor-grab touch-pan-y select-none active:cursor-grabbing"
-            >
-              <Image
-                src={active.imagenBolsa}
-                alt={`Bolsa Que Nachos sabor ${active.nombre}`}
-                width={420}
-                height={700}
-                priority
-                draggable={false}
-                sizes="(max-width: 640px) 62vw, (max-width: 1024px) 38vw, 26vw"
-                className="pointer-events-none mx-auto block h-auto w-[62vw] max-w-[280px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)] sm:w-[38vw] sm:max-w-[330px] lg:w-[26vw] lg:max-w-[360px]"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute -bottom-2 left-1/2 -z-10 h-12 w-[70%] -translate-x-1/2 rounded-[100%]"
-                style={{
-                  background: `radial-gradient(ellipse at center, ${active.colorTexto}55 0%, transparent 70%)`,
-                  filter: "blur(18px)",
-                }}
-              />
-            </motion.div>
-          </AnimatePresence>
+        {/* trío de bolsas — activa al centro, vecinas a los lados */}
+        <div className="relative flex min-h-0 touch-pan-y items-center justify-center">
+          {sabores.map((s, i) => {
+            // offset normalizado a [-1, 0, 1] para 3 sabores
+            let offset = i - index;
+            const len = sabores.length;
+            if (offset > len / 2) offset -= len;
+            if (offset < -len / 2) offset += len;
 
-          {/* decorativo flotante derecho */}
+            const isCenter = offset === 0;
+            const pose = isCenter
+              ? { x: "0%", scale: 1, rotate: 0, opacity: 1, blur: 0, z: 10 }
+              : offset < 0
+                ? { x: "-78%", scale: 0.58, rotate: -10, opacity: 0.5, blur: 3, z: 5 }
+                : { x: "78%", scale: 0.58, rotate: 10, opacity: 0.5, blur: 3, z: 5 };
+
+            const centerProps = isCenter
+              ? {
+                  drag: "x" as const,
+                  dragConstraints: { left: 0, right: 0 },
+                  dragElastic: 0.2,
+                  onDragEnd: (
+                    _e: unknown,
+                    info: { offset: { x: number } },
+                  ) => {
+                    if (info.offset.x < -60) next();
+                    else if (info.offset.x > 60) prev();
+                  },
+                  whileHover: shouldReduceMotion
+                    ? undefined
+                    : { scale: 1.04, rotate: -1.5 },
+                }
+              : { onClick: () => goTo(i) };
+
+            return (
+              <motion.div
+                key={s.id}
+                initial={false}
+                animate={{
+                  x: pose.x,
+                  scale: pose.scale,
+                  rotate: pose.rotate,
+                  opacity: pose.opacity,
+                  filter: `blur(${pose.blur}px)`,
+                }}
+                transition={{
+                  duration: shouldReduceMotion ? 0 : 0.6,
+                  ease: [0.4, 0, 0.2, 1],
+                }}
+                style={{ zIndex: pose.z }}
+                className={
+                  "absolute inset-0 flex select-none items-center justify-center " +
+                  (isCenter
+                    ? "cursor-grab active:cursor-grabbing"
+                    : "cursor-pointer")
+                }
+                aria-hidden={!isCenter}
+                {...centerProps}
+              >
+                <div className="relative">
+                  <Image
+                    src={s.imagenBolsa}
+                    alt={isCenter ? `Bolsa Que Nachos sabor ${s.nombre}` : ""}
+                    width={420}
+                    height={700}
+                    priority={i === 0}
+                    draggable={false}
+                    sizes="(max-width: 640px) 52vw, (max-width: 1024px) 34vw, 24vw"
+                    className="pointer-events-none block h-auto w-[52vw] max-w-[260px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)] sm:w-[34vw] sm:max-w-[310px] lg:w-[24vw] lg:max-w-[340px]"
+                  />
+                  {isCenter && (
+                    <div
+                      aria-hidden="true"
+                      className="absolute -bottom-2 left-1/2 -z-10 h-12 w-[70%] -translate-x-1/2 rounded-[100%]"
+                      style={{
+                        background: `radial-gradient(ellipse at center, ${active.colorTexto}55 0%, transparent 70%)`,
+                        filter: "blur(18px)",
+                      }}
+                    />
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+
+          {/* decorativo flotante derecho (sabor activo) */}
           <AnimatePresence>
             <motion.div
               key={`deco-${active.id}`}
@@ -274,12 +291,8 @@ export function Hero({ sabores }: Props) {
                   ? { opacity: 0 }
                   : { opacity: 0, x: -80, rotate: 22, scale: 0.7 }
               }
-              transition={{
-                duration: 0.75,
-                ease: [0.4, 0, 0.2, 1],
-                delay: 0.05,
-              }}
-              className="pointer-events-none absolute right-[4%] top-[6%] z-20 sm:right-[8%] sm:top-[4%]"
+              transition={{ duration: 0.75, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
+              className="pointer-events-none absolute right-[3%] top-[4%] z-20 sm:right-[10%] sm:top-[2%]"
             >
               <motion.div
                 animate={
@@ -287,11 +300,7 @@ export function Hero({ sabores }: Props) {
                     ? undefined
                     : { y: [0, -10, 0], rotate: [0, 4, 0] }
                 }
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
               >
                 <Image
                   src={active.decorativo}
@@ -299,57 +308,9 @@ export function Hero({ sabores }: Props) {
                   width={260}
                   height={260}
                   aria-hidden="true"
-                  sizes="(max-width: 640px) 28vw, 18vw"
+                  sizes="(max-width: 640px) 24vw, 16vw"
                   style={{ width: "auto", height: "auto" }}
-                  className="h-auto w-[28vw] max-w-[140px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] sm:w-[18vw] sm:max-w-[200px]"
-                />
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* decorativo flotante izquierdo */}
-          <AnimatePresence>
-            <motion.div
-              key={`deco2-${active.id}`}
-              initial={
-                shouldReduceMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, x: -140, rotate: 22, scale: 0.6 }
-              }
-              animate={{ opacity: 0.5, x: 0, rotate: -8, scale: 0.8 }}
-              exit={
-                shouldReduceMotion
-                  ? { opacity: 0 }
-                  : { opacity: 0, x: 100, rotate: -22, scale: 0.7 }
-              }
-              transition={{
-                duration: 0.75,
-                ease: [0.4, 0, 0.2, 1],
-                delay: 0.12,
-              }}
-              className="pointer-events-none absolute bottom-[6%] left-[2%] z-10 sm:bottom-[10%] sm:left-[6%]"
-            >
-              <motion.div
-                animate={
-                  shouldReduceMotion
-                    ? undefined
-                    : { y: [0, 8, 0], rotate: [-8, -4, -8] }
-                }
-                transition={{
-                  duration: 6.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <Image
-                  src={active.decorativo}
-                  alt=""
-                  width={200}
-                  height={200}
-                  aria-hidden="true"
-                  sizes="(max-width: 640px) 18vw, 12vw"
-                  style={{ width: "auto", height: "auto" }}
-                  className="h-auto w-[18vw] max-w-[90px] drop-shadow-[0_15px_30px_rgba(0,0,0,0.4)] sm:w-[12vw] sm:max-w-[130px]"
+                  className="h-auto w-[24vw] max-w-[120px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] sm:w-[16vw] sm:max-w-[180px]"
                 />
               </motion.div>
             </motion.div>
@@ -357,28 +318,8 @@ export function Hero({ sabores }: Props) {
         </div>
       </div>
 
-      {/* ROW 3 — BOTTOM (microcopy + CTA) */}
+      {/* ROW 3 — BOTTOM (CTA) */}
       <div className="relative z-20 px-4 pb-6 sm:px-8 sm:pb-8">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`micro-${active.id}`}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35 }}
-            className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-full px-4 py-1.5 backdrop-blur"
-            style={{
-              backgroundColor: `${active.colorTexto}18`,
-              color: active.colorTexto,
-              border: `1px solid ${active.colorTexto}3a`,
-            }}
-          >
-            <Sparkles className="size-3.5" strokeWidth={2.5} />
-            <span className="text-caption">
-              {active.proteinaG}g proteína · sin culpa · horneados
-            </span>
-          </motion.div>
-        </AnimatePresence>
 
         <div className="flex items-center justify-between gap-3 sm:gap-6">
           <button
