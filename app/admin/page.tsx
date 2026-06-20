@@ -23,7 +23,7 @@ export default async function DashboardPage() {
 
       {!d.configured && (
         <div className="rounded-2xl border border-[#f59e0b]/40 bg-[#fffbeb] px-4 py-3 text-body-sm text-[#b45309]">
-          Falta conectar la base: agregá <code>SUPABASE_DB_URL</code> en{" "}
+          Falta conectar la base: agregá <code>SUPABASE_SERVICE_ROLE_KEY</code> en{" "}
           <code>.env.local</code> para ver datos reales.
         </div>
       )}

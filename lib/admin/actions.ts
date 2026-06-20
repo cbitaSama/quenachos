@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getSql, isDbConfigured } from "./db";
+import { getAdmin, isDbConfigured } from "./db";
 
-export type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
+export type ActionResult =
+  | { ok: true; message?: string }
+  | { ok: false; error: string };
 
 async function adminEmail(): Promise<string | null> {
   const supabase = await createClient();
@@ -14,24 +16,23 @@ async function adminEmail(): Promise<string | null> {
   return user?.email ?? null;
 }
 
-function dbError(e: unknown): string {
-  const msg = e instanceof Error ? e.message : String(e);
-  // Mensajes de las RPC (raise exception) ya son claros; recortamos ruido.
-  return msg.replace(/^.*?ERROR:\s*/i, "").trim() || "Error en la base de datos.";
+function clean(msg: string | undefined): string {
+  return (msg ?? "").replace(/^.*?ERROR:\s*/i, "").trim() || "Error en la base de datos.";
 }
 
-// Confirma el comprobante → la RPC confirmar_pedido es el ÚNICO punto que baja stock.
+// Confirma el comprobante → confirmar_pedido es el ÚNICO punto que baja stock.
 export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
   if (!pedidoId) return { ok: false, error: "Falta el pedido." };
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  try {
-    await getSql()`select quenachos.confirmar_pedido(${pedidoId}::uuid, ${email})`;
-  } catch (e) {
-    return { ok: false, error: dbError(e) };
-  }
+  const { error } = await getAdmin().rpc("qn_confirmar_pedido", {
+    p_pedido_id: pedidoId,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
   revalidatePath("/admin");
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/inventario");
@@ -50,18 +51,15 @@ export async function registrarProduccion(input: {
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  try {
-    await getSql()`
-      select quenachos.registrar_produccion(
-        ${input.saborId},
-        ${input.cantidad},
-        ${input.lote?.trim() || null},
-        ${input.vencimiento || null}::date,
-        ${email}
-      )`;
-  } catch (e) {
-    return { ok: false, error: dbError(e) };
-  }
+  const { error } = await getAdmin().rpc("qn_registrar_produccion", {
+    p_sabor_id: input.saborId,
+    p_cantidad: input.cantidad,
+    p_lote: input.lote?.trim() || null,
+    p_vencimiento: input.vencimiento || null,
+    p_creado_por: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
   revalidatePath("/admin");
   revalidatePath("/admin/inventario");
   revalidatePath("/admin/produccion");
@@ -79,17 +77,14 @@ export async function cerrarFactura(input: {
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  try {
-    await getSql()`
-      select quenachos.cerrar_factura(
-        ${input.clienteId}::uuid,
-        ${input.inicio}::date,
-        ${input.fin}::date,
-        ${input.fechaPago || null}::date
-      )`;
-  } catch (e) {
-    return { ok: false, error: dbError(e) };
-  }
+  const { error } = await getAdmin().rpc("qn_cerrar_factura", {
+    p_cliente_id: input.clienteId,
+    p_inicio: input.inicio,
+    p_fin: input.fin,
+    p_fecha_pago: input.fechaPago || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Factura cerrada." };
 }
@@ -104,14 +99,13 @@ export async function pagarFactura(input: {
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  try {
-    await getSql()`
-      select quenachos.pagar_factura(
-        ${input.facturaId}::uuid, ${email}, ${input.comprobantePath || null}
-      )`;
-  } catch (e) {
-    return { ok: false, error: dbError(e) };
-  }
+  const { error } = await getAdmin().rpc("qn_pagar_factura", {
+    p_factura_id: input.facturaId,
+    p_admin: email,
+    p_comprobante: input.comprobantePath || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Pago confirmado." };
 }

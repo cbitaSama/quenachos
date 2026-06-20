@@ -1,31 +1,18 @@
-import postgres from "postgres";
+import { createAdminClient } from "@/lib/supabase/server";
+import { isAdminDataConfigured } from "@/lib/supabase/env";
 
-// Conexión DIRECTA a Postgres del proyecto "Vectoria Space" para leer/escribir
-// el schema `quenachos` (que no está expuesto al API REST). Solo server-side.
-// Usar el connection string del POOLER (Transaction, puerto 6543).
-const url = (process.env.SUPABASE_DB_URL || "").trim();
+// Datos del negocio: cliente service_role que llama a las funciones puente
+// public.qn_* (que leen/escriben el schema `quenachos`). No expone el schema
+// ni necesita connection string — solo la service_role key.
+export const isDbConfigured = isAdminDataConfigured;
 
-export const isDbConfigured = url.length > 0;
+let cached: ReturnType<typeof createAdminClient> | null = null;
 
-// Singleton entre invocaciones (evita agotar conexiones en serverless).
-const globalForSql = globalThis as unknown as {
-  __qnSql?: ReturnType<typeof postgres>;
-};
-
-function makeClient() {
-  return postgres(url, {
-    prepare: false, // requerido por el pooler en modo transaction (pgbouncer)
-    idle_timeout: 20,
-    max: 5,
-    connection: { application_name: "quenachos-admin" },
-  });
-}
-
-export function getSql() {
-  if (!isDbConfigured) {
+export function getAdmin() {
+  if (!isAdminDataConfigured) {
     throw new Error(
-      "SUPABASE_DB_URL no está configurada. Agregала en .env.local (connection string del pooler).",
+      "SUPABASE_SERVICE_ROLE_KEY no está configurada. Agregала en .env.local.",
     );
   }
-  return (globalForSql.__qnSql ??= makeClient());
+  return (cached ??= createAdminClient());
 }

@@ -28,7 +28,7 @@ export default async function AdminLayout({
             Falta conectar Supabase. Configurá{" "}
             <code className="text-[var(--color-rojo)]">NEXT_PUBLIC_SUPABASE_URL</code>,{" "}
             <code className="text-[var(--color-rojo)]">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{" "}
-            y <code className="text-[var(--color-rojo)]">SUPABASE_DB_URL</code>.
+            y <code className="text-[var(--color-rojo)]">SUPABASE_SERVICE_ROLE_KEY</code>.
           </p>
         </div>
       </main>
