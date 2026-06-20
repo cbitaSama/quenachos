@@ -193,6 +193,26 @@ export function Hero({ sabores }: Props) {
 
         {/* trío de bolsas — activa al centro, vecinas a los lados */}
         <div className="relative flex min-h-0 touch-pan-y items-center justify-center">
+          {/* flechas translúcidas — señal de que se puede deslizar */}
+          <button
+            type="button"
+            onClick={prev}
+            aria-label="Sabor anterior"
+            className="absolute left-1 top-1/2 z-30 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20 sm:left-3 sm:size-14"
+            style={{ color: active.colorTexto }}
+          >
+            <ChevronLeft className="size-6 sm:size-7" strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            onClick={next}
+            aria-label="Siguiente sabor"
+            className="absolute right-1 top-1/2 z-30 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-white/10 backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20 sm:right-3 sm:size-14"
+            style={{ color: active.colorTexto }}
+          >
+            <ChevronRight className="size-6 sm:size-7" strokeWidth={2.5} />
+          </button>
+
           {sabores.map((s, i) => {
             // offset normalizado a [-1, 0, 1] para 3 sabores
             let offset = i - index;
@@ -250,28 +270,40 @@ export function Hero({ sabores }: Props) {
                 aria-hidden={!isCenter}
                 {...centerProps}
               >
-                <div className="relative">
+                <motion.div
+                  className="relative"
+                  animate={
+                    isCenter && !shouldReduceMotion
+                      ? { y: [0, -14, 0] }
+                      : { y: 0 }
+                  }
+                  transition={{
+                    duration: 4.5,
+                    repeat: isCenter && !shouldReduceMotion ? Infinity : 0,
+                    ease: "easeInOut",
+                  }}
+                >
                   <Image
                     src={s.imagenBolsa}
                     alt={isCenter ? `Bolsa Que Nachos sabor ${s.nombre}` : ""}
-                    width={420}
-                    height={700}
+                    width={520}
+                    height={860}
                     priority={i === 0}
                     draggable={false}
-                    sizes="(max-width: 640px) 52vw, (max-width: 1024px) 34vw, 24vw"
-                    className="pointer-events-none block h-auto w-[52vw] max-w-[260px] drop-shadow-[0_40px_80px_rgba(0,0,0,0.55)] sm:w-[34vw] sm:max-w-[310px] lg:w-[24vw] lg:max-w-[340px]"
+                    sizes="(max-width: 640px) 70vw, (max-width: 1024px) 44vw, 32vw"
+                    className="pointer-events-none block h-auto w-[70vw] max-w-[340px] drop-shadow-[0_50px_90px_rgba(0,0,0,0.6)] sm:w-[44vw] sm:max-w-[420px] lg:w-[32vw] lg:max-w-[470px]"
                   />
                   {isCenter && (
                     <div
                       aria-hidden="true"
-                      className="absolute -bottom-2 left-1/2 -z-10 h-12 w-[70%] -translate-x-1/2 rounded-[100%]"
+                      className="absolute -bottom-3 left-1/2 -z-10 h-16 w-[78%] -translate-x-1/2 rounded-[100%]"
                       style={{
-                        background: `radial-gradient(ellipse at center, ${active.colorTexto}55 0%, transparent 70%)`,
-                        filter: "blur(18px)",
+                        background: `radial-gradient(ellipse at center, ${active.colorTexto}66 0%, transparent 70%)`,
+                        filter: "blur(22px)",
                       }}
                     />
                   )}
-                </div>
+                </motion.div>
               </motion.div>
             );
           })}
@@ -321,20 +353,7 @@ export function Hero({ sabores }: Props) {
       {/* ROW 3 — BOTTOM (CTA) */}
       <div className="relative z-20 px-4 pb-6 sm:px-8 sm:pb-8">
 
-        <div className="flex items-center justify-between gap-3 sm:gap-6">
-          <button
-            type="button"
-            onClick={prev}
-            aria-label="Sabor anterior"
-            className="hidden size-12 items-center justify-center rounded-full border-2 transition-all hover:scale-110 sm:flex"
-            style={{
-              borderColor: `${active.colorTexto}66`,
-              color: active.colorTexto,
-            }}
-          >
-            <ChevronLeft strokeWidth={2.5} />
-          </button>
-
+        <div className="mx-auto flex max-w-xl items-center justify-center">
           <Button
             href={whatsappLink(MENSAJES.porSabor(active.nombre))}
             target="_blank"
@@ -347,24 +366,10 @@ export function Hero({ sabores }: Props) {
             }
             variant={active.id === "clasico" ? "secondary" : "primary"}
             size="xl"
-            className="flex-1 sm:flex-initial sm:min-w-[280px]"
             fullWidth
           >
             PEDÍ {active.nombre.toUpperCase()}
           </Button>
-
-          <button
-            type="button"
-            onClick={next}
-            aria-label="Siguiente sabor"
-            className="hidden size-12 items-center justify-center rounded-full border-2 transition-all hover:scale-110 sm:flex"
-            style={{
-              borderColor: `${active.colorTexto}66`,
-              color: active.colorTexto,
-            }}
-          >
-            <ChevronRight strokeWidth={2.5} />
-          </button>
         </div>
 
         {/* dots */}
