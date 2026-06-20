@@ -10,11 +10,11 @@ const CARDS = [
     chip: "Proteína real",
     title: (
       <>
-        <AnimatedNumber value={18} suffix="g" /> de proteína por bolsa
+        <AnimatedNumber value={46} suffix="g" /> de proteína por bolsa
       </>
     ),
     body:
-      "Pechuga de pollo 100% seleccionada: 18.37 g de proteína y solo 124.6 kcal por bolsa de 60 g. Sin batidos ni polvos raros.",
+      "Pechuga de pollo 100% seleccionada y verificada en laboratorio (LABROB · UAGRM). Snackeás proteína de verdad, sin batidos ni polvos raros.",
     color: "var(--color-rojo)",
     accent: "bg-[var(--color-rojo)]",
   },
@@ -125,7 +125,7 @@ export function PorQue() {
                 Tabla nutricional
               </p>
               <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
-                Por bolsa de 60 g · sin gluten
+                Por bolsa de 60 g · verificado en laboratorio (LABROB · UAGRM)
               </p>
             </div>
             <dl className="grid grid-cols-3 gap-x-6 gap-y-3 text-center sm:grid-cols-5 sm:gap-x-8">
@@ -148,9 +148,9 @@ export function PorQue() {
 }
 
 const NUTRICION = [
-  { label: "Proteína", value: "18.37g" },
-  { label: "Calorías", value: "124.6" },
-  { label: "Carbos", value: "0.9g" },
-  { label: "Fibra", value: "0.3g" },
-  { label: "Grasa", value: "5.38g" },
+  { label: "Proteína", value: "46g" },
+  { label: "Por 100g", value: "76,3g" },
+  { label: "Gramaje", value: "60g" },
+  { label: "Base", value: "Pollo" },
+  { label: "Gluten", value: "0" },
 ];

@@ -199,7 +199,7 @@ function SaborCard({ sabor, index }: { sabor: Sabor; index: number }) {
               className="mt-1 text-caption"
               style={{ color: `${sabor.colorTexto}99` }}
             >
-              {sabor.proteinaG}g proteína · 60g
+              60g · sin gluten
             </span>
           </div>
           <button

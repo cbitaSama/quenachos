@@ -126,7 +126,7 @@ export async function GET() {
                 fontWeight: 800,
               }}
             >
-              18g PROTEÍNA
+              46g PROTEÍNA
             </span>
             <span style={{ opacity: 0.7 }}>·</span>
             <span>3 sabores</span>

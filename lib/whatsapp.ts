@@ -12,7 +12,7 @@ export const MENSAJES = {
   evento:
     "¡Hola! Quiero llevar Que Nachos a un evento. ¿Me cuentan opciones y precios?",
   recojo: "Hola, quiero coordinar un recojo en el punto de Santa Cruz.",
-  pack: "Hola, quiero un combo de los 3 sabores 🧀🍋🌶️",
+  pack: "Hola, quiero un combo de los 3 sabores 🍗🍋🌶️",
   carrito: (
     items: { nombre: string; cantidad: number; precio: number | null }[],
     total: number,

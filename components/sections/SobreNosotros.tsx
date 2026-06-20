@@ -53,7 +53,7 @@ export function SobreNosotros() {
             <div className="mt-8 flex items-center gap-6">
               <div className="flex flex-col">
                 <span className="font-display text-4xl text-[var(--color-rojo)]">
-                  4
+                  3
                 </span>
                 <span className="text-caption text-[var(--color-gris-500)]">
                   sabores
@@ -62,10 +62,10 @@ export function SobreNosotros() {
               <div className="h-12 w-px bg-[var(--color-negro)]/10" />
               <div className="flex flex-col">
                 <span className="font-display text-4xl text-[var(--color-rojo)]">
-                  18g
+                  100%
                 </span>
                 <span className="text-caption text-[var(--color-gris-500)]">
-                  proteína
+                  pollo
                 </span>
               </div>
               <div className="h-12 w-px bg-[var(--color-negro)]/10" />
