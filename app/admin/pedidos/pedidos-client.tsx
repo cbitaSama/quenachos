@@ -101,6 +101,22 @@ export function PedidosClient({ pedidos }: { pedidos: PedidoAdmin[] }) {
                 <p className="text-[11px] text-[var(--color-gris-500)]">
                   {p.origen} · {formatFechaHora(p.createdAt)}
                 </p>
+                {(p.telefono || p.direccionTexto || p.gpsUrl) && (
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--color-gris-500)]">
+                    {p.telefono && <span>📞 {p.telefono}</span>}
+                    {p.direccionTexto && <span>📍 {p.direccionTexto}</span>}
+                    {p.gpsUrl && (
+                      <a
+                        href={p.gpsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-[var(--color-rojo)] underline underline-offset-2"
+                      >
+                        Ver GPS
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
               {p.estado === "comprobante_recibido" && (
                 <ConfirmarButton pedidoId={p.id} />

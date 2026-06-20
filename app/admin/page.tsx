@@ -1,6 +1,6 @@
 import { getDashboard } from "@/lib/admin/queries";
 import { formatBs } from "@/lib/admin/format";
-import { KpiCard, Card, EmptyState, Badge } from "@/components/admin/ui";
+import { KpiCard, Card, EmptyState } from "@/components/admin/ui";
 import { ProduccionChart } from "./dashboard-charts";
 import { AlertasVencimiento } from "./alertas-vencimiento";
 import { ConfirmarButton } from "./pedidos/confirmar-button";
@@ -53,10 +53,11 @@ export default async function DashboardPage() {
             {d.stock.map((s) => (
               <li key={s.id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                 <span className="text-body-md">{s.nombre}</span>
-                <span className="flex items-center gap-2">
-                  <span className="text-body-md tabular-nums">{s.stockActual}</span>
-                  <span className="text-body-sm text-[var(--color-gris-500)]">/ mín {s.stockMinimo}</span>
-                  {s.bajoMinimo && <Badge tone="danger">bajo</Badge>}
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-display text-2xl leading-none tabular-nums">
+                    {s.stockActual}
+                  </span>
+                  <span className="text-body-sm text-[var(--color-gris-500)]">bolsas</span>
                 </span>
               </li>
             ))}

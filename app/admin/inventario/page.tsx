@@ -26,10 +26,9 @@ export default async function InventarioPage() {
             {stock.map((s) => (
               <li key={s.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
                 <span className="text-body-md font-medium">{s.nombre}</span>
-                <span className="flex items-center gap-2">
-                  <span className="font-display text-2xl leading-none">{s.stockActual}</span>
-                  <span className="text-body-sm text-[var(--color-gris-500)]">/ mín {s.stockMinimo}</span>
-                  {s.bajoMinimo && <Badge tone="danger">bajo mínimo</Badge>}
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-display text-3xl leading-none">{s.stockActual}</span>
+                  <span className="text-body-sm text-[var(--color-gris-500)]">bolsas</span>
                 </span>
               </li>
             ))}

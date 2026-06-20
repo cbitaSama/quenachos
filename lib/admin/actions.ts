@@ -89,6 +89,92 @@ export async function cerrarFactura(input: {
   return { ok: true, message: "Factura cerrada." };
 }
 
+// ── Cuentas corrientes (proveedores / clientes a crédito) ───────────────────
+
+export async function crearCuenta(input: {
+  razonSocial: string;
+  contacto?: string | null;
+  telefono?: string | null;
+  ciclo?: string;
+  diaCorte?: number;
+  direccion?: string | null;
+  gps?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.razonSocial?.trim() && !input.contacto?.trim()) {
+    return { ok: false, error: "Poné al menos la razón social o el contacto." };
+  }
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_crear_cuenta", {
+    p_razon_social: input.razonSocial?.trim() || null,
+    p_contacto: input.contacto?.trim() || null,
+    p_telefono: input.telefono?.trim() || null,
+    p_ciclo: input.ciclo || "mensual",
+    p_dia_corte: input.diaCorte ?? 1,
+    p_direccion: input.direccion?.trim() || null,
+    p_gps: input.gps?.trim() || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Cuenta corriente creada." };
+}
+
+export async function agregarContacto(input: {
+  clienteId: string;
+  nombre: string;
+  telefono: string;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.clienteId) return { ok: false, error: "Falta la cuenta." };
+  if (!input.nombre?.trim()) return { ok: false, error: "Falta el nombre." };
+  if (!input.telefono?.trim()) return { ok: false, error: "Falta el teléfono." };
+
+  const { error } = await getAdmin().rpc("qn_agregar_contacto", {
+    p_cliente_id: input.clienteId,
+    p_nombre: input.nombre.trim(),
+    p_telefono: input.telefono.trim(),
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Contacto autorizado." };
+}
+
+export async function quitarContacto(contactoId: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!contactoId) return { ok: false, error: "Falta el contacto." };
+
+  const { error } = await getAdmin().rpc("qn_quitar_contacto", {
+    p_contacto_id: contactoId,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true };
+}
+
+export async function setDireccionCuenta(input: {
+  clienteId: string;
+  direccion: string;
+  gps?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.clienteId) return { ok: false, error: "Falta la cuenta." };
+
+  const { error } = await getAdmin().rpc("qn_set_direccion_cuenta", {
+    p_cliente_id: input.clienteId,
+    p_direccion: input.direccion?.trim() || null,
+    p_gps: input.gps?.trim() || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Dirección actualizada." };
+}
+
 // Confirma el PAGO de una factura (cobro consolidado). NO toca inventario.
 export async function pagarFactura(input: {
   facturaId: string;

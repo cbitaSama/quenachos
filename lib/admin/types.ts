@@ -2,8 +2,6 @@ export type SaborStock = {
   id: string;
   nombre: string;
   stockActual: number;
-  stockMinimo: number;
-  bajoMinimo: boolean;
 };
 
 export type PorSabor = {
@@ -33,7 +31,16 @@ export type PedidoAdmin = {
   estado: string;
   comprobantePath: string | null;
   createdAt: string;
+  direccionTexto: string | null;
+  gpsUrl: string | null;
+  entregaNota: string | null;
   items: PedidoItem[];
+};
+
+export type Contacto = {
+  id: string;
+  nombre: string;
+  telefono: string;
 };
 
 export type CuentaCorriente = {
@@ -43,6 +50,9 @@ export type CuentaCorriente = {
   saldoPendienteBs: number;
   ciclo: string;
   diaCorte: number;
+  direccionEntrega: string | null;
+  gpsEntrega: string | null;
+  contactos: Contacto[];
 };
 
 export type FacturaAdmin = {
