@@ -21,6 +21,16 @@ export type LoteAlerta = {
 
 export type PedidoItem = { sabor: string; cantidad: number };
 
+export type SaborPrecio = { id: string; nombre: string; precio: number };
+
+export type VentaFisicaRow = {
+  id: string;
+  totalBs: number;
+  createdAt: string;
+  nota: string | null;
+  items: PedidoItem[];
+};
+
 export type PedidoAdmin = {
   id: string;
   cliente: string | null;
@@ -30,6 +40,7 @@ export type PedidoAdmin = {
   origen: string;
   estado: string;
   comprobantePath: string | null;
+  comprobanteUrl?: string | null;
   createdAt: string;
   direccionTexto: string | null;
   gpsUrl: string | null;
@@ -63,6 +74,16 @@ export type FacturaAdmin = {
   totalBs: number;
   estado: string;
   fechaPagoLimite: string | null;
+};
+
+export type AtencionRow = {
+  id: string;
+  telefono: string;
+  nombre: string | null;
+  motivo: string;
+  detalle: string | null;
+  estado: string;
+  createdAt: string;
 };
 
 export type MovimientoAdmin = {

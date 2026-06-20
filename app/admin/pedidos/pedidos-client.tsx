@@ -119,7 +119,29 @@ export function PedidosClient({ pedidos }: { pedidos: PedidoAdmin[] }) {
                 )}
               </div>
               {p.estado === "comprobante_recibido" && (
-                <ConfirmarButton pedidoId={p.id} />
+                <div className="flex shrink-0 items-center gap-2.5">
+                  {p.comprobanteUrl ? (
+                    <a
+                      href={p.comprobanteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Ver comprobante completo"
+                      className="block shrink-0"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={p.comprobanteUrl}
+                        alt="Comprobante de pago"
+                        className="size-14 rounded-lg border border-[var(--color-negro)]/15 object-cover transition-transform hover:scale-105"
+                      />
+                    </a>
+                  ) : (
+                    <span className="text-[11px] text-[var(--color-gris-500)]">
+                      sin imagen
+                    </span>
+                  )}
+                  <ConfirmarButton pedidoId={p.id} />
+                </div>
               )}
             </li>
           ))}

@@ -1,7 +1,7 @@
 import { getSaboresActivos, getMovimientos } from "@/lib/admin/queries";
-import { formatFecha, formatFechaHora } from "@/lib/admin/format";
 import { Card, EmptyState } from "@/components/admin/ui";
 import { ProduccionForm } from "./produccion-form";
+import { ProduccionHistory } from "./produccion-history";
 
 export const dynamic = "force-dynamic";
 
@@ -32,38 +32,9 @@ export default async function ProduccionPage() {
 
       <section>
         <h2 className="mb-3 text-caption text-[var(--color-gris-500)]">
-          Últimas producciones
+          Últimas producciones · editá o eliminá si te equivocaste
         </h2>
-        {movimientos.length === 0 ? (
-          <EmptyState>Todavía no registraste producción.</EmptyState>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-[var(--color-negro)]/10 bg-white">
-            <table className="w-full text-left text-body-sm">
-              <thead className="border-b border-[var(--color-negro)]/10 text-caption text-[var(--color-gris-500)]">
-                <tr>
-                  <th className="px-4 py-2.5 font-normal">Fecha</th>
-                  <th className="px-4 py-2.5 font-normal">Sabor</th>
-                  <th className="px-4 py-2.5 text-right font-normal">Cantidad</th>
-                  <th className="px-4 py-2.5 font-normal">Lote</th>
-                  <th className="px-4 py-2.5 font-normal">Vence</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--color-negro)]/5">
-                {movimientos.map((m) => (
-                  <tr key={m.id}>
-                    <td className="px-4 py-2.5 text-[var(--color-gris-500)]">
-                      {formatFechaHora(m.createdAt)}
-                    </td>
-                    <td className="px-4 py-2.5 font-medium">{m.sabor}</td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">+{m.cantidad}</td>
-                    <td className="px-4 py-2.5">{m.lote ?? "—"}</td>
-                    <td className="px-4 py-2.5">{formatFecha(m.vencimiento)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <ProduccionHistory movimientos={movimientos} />
       </section>
     </div>
   );

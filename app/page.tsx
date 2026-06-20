@@ -67,11 +67,11 @@ export default async function Home() {
       <NubeDivider />
       <PorQue />
       <Sabores sabores={sabores} />
-      <Recojo ubicacion={ubicacion} />
       <Eventos />
       <SobreNosotros />
       <Comunidad fotos={lifestyle} />
       <QR />
+      <Recojo ubicacion={ubicacion} />
       <Footer />
     </main>
   );

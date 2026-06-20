@@ -1,5 +1,6 @@
 import { getAdmin, isDbConfigured } from "./db";
 import type {
+  AtencionRow,
   CuentaCorriente,
   DashboardData,
   FacturaAdmin,
@@ -7,7 +8,9 @@ import type {
   MovimientoAdmin,
   PedidoAdmin,
   PorSabor,
+  SaborPrecio,
   SaborStock,
+  VentaFisicaRow,
 } from "./types";
 
 function fechaLegible(): string {
@@ -75,7 +78,22 @@ export async function getPedidosPorConfirmar(): Promise<PedidoAdmin[]> {
 
 export async function getPedidos(estado?: string): Promise<PedidoAdmin[]> {
   const data = await rpc<PedidoAdmin[]>("qn_pedidos", { p_estado: estado ?? null });
-  return data ?? [];
+  if (!data) return [];
+  // Firmar las URLs de los comprobantes (bucket privado) para poder mostrarlos.
+  return Promise.all(
+    data.map(async (p) => ({
+      ...p,
+      comprobanteUrl: await signComprobante(p.comprobantePath),
+    })),
+  );
+}
+
+async function signComprobante(path: string | null): Promise<string | null> {
+  if (!path || !isDbConfigured) return null;
+  const { data } = await getAdmin()
+    .storage.from("qn-comprobantes")
+    .createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? null;
 }
 
 export async function getInventario(): Promise<{
@@ -96,6 +114,16 @@ export async function getMovimientos(tipo?: string): Promise<MovimientoAdmin[]> 
   return data ?? [];
 }
 
+export async function getSaboresVenta(): Promise<SaborPrecio[]> {
+  const data = await rpc<SaborPrecio[]>("qn_sabores_venta");
+  return data ?? [];
+}
+
+export async function getVentasFisicas(): Promise<VentaFisicaRow[]> {
+  const data = await rpc<VentaFisicaRow[]>("qn_ventas_fisicas");
+  return data ?? [];
+}
+
 export async function getCuentasPorCobrar(): Promise<CuentaCorriente[]> {
   const data = await rpc<CuentaCorriente[]>("qn_cuentas");
   return data ?? [];
@@ -103,5 +131,10 @@ export async function getCuentasPorCobrar(): Promise<CuentaCorriente[]> {
 
 export async function getFacturas(): Promise<FacturaAdmin[]> {
   const data = await rpc<FacturaAdmin[]>("qn_facturas");
+  return data ?? [];
+}
+
+export async function getAtencion(): Promise<AtencionRow[]> {
+  const data = await rpc<AtencionRow[]>("qn_atencion_humana");
   return data ?? [];
 }

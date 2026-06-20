@@ -7,7 +7,10 @@ import {
   Factory,
   Boxes,
   ClipboardList,
+  Store,
   Wallet,
+  QrCode,
+  LifeBuoy,
 } from "lucide-react";
 
 const ITEMS = [
@@ -15,10 +18,19 @@ const ITEMS = [
   { href: "/admin/produccion", label: "Producción", icon: Factory },
   { href: "/admin/inventario", label: "Inventario", icon: Boxes },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
+  { href: "/admin/venta-fisica", label: "Venta física", icon: Store },
+  { href: "/admin/atencion", label: "Atención", icon: LifeBuoy },
   { href: "/admin/cuentas", label: "Cuentas", icon: Wallet },
+  { href: "/admin/ajustes", label: "Ajustes", icon: QrCode },
 ];
 
-export function AdminNav({ porConfirmar = 0 }: { porConfirmar?: number }) {
+export function AdminNav({
+  porConfirmar = 0,
+  porAtender = 0,
+}: {
+  porConfirmar?: number;
+  porAtender?: number;
+}) {
   const pathname = usePathname();
 
   return (
@@ -28,7 +40,13 @@ export function AdminNav({ porConfirmar = 0 }: { porConfirmar?: number }) {
           ? pathname === item.href
           : pathname.startsWith(item.href);
         const Icon = item.icon;
-        const badge = item.href === "/admin/pedidos" && porConfirmar > 0;
+        const count =
+          item.href === "/admin/pedidos"
+            ? porConfirmar
+            : item.href === "/admin/atencion"
+              ? porAtender
+              : 0;
+        const badge = count > 0;
         return (
           <Link
             key={item.href}
@@ -49,7 +67,7 @@ export function AdminNav({ porConfirmar = 0 }: { porConfirmar?: number }) {
                     : "bg-[var(--color-rojo)] text-white"
                 }`}
               >
-                {porConfirmar}
+                {count}
               </span>
             )}
           </Link>

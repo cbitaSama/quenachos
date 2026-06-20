@@ -1,7 +1,7 @@
 import type { Ubicacion } from "@/lib/types";
 
-const LAT = Number(process.env.NEXT_PUBLIC_PICKUP_LAT ?? -17.741248);
-const LNG = Number(process.env.NEXT_PUBLIC_PICKUP_LNG ?? -63.178774);
+const LAT = Number(process.env.NEXT_PUBLIC_PICKUP_LAT ?? -17.741199);
+const LNG = Number(process.env.NEXT_PUBLIC_PICKUP_LNG ?? -63.178905);
 
 export const UBICACION: Ubicacion = {
   nombre: "Punto de recojo",
@@ -11,7 +11,7 @@ export const UBICACION: Ubicacion = {
   horarios: [
     { dias: "Lunes a Viernes", apertura: "07:00", cierre: "19:00" },
   ],
-  googleMapsUrl: "https://maps.app.goo.gl/bQcdx3VfiyhULKmB7",
+  googleMapsUrl: "https://maps.app.goo.gl/MPdTU4TkG2d4U6p89",
   googleMapsEmbedUrl: `https://www.google.com/maps?q=${LAT},${LNG}&hl=es&z=16&output=embed`,
 };
 

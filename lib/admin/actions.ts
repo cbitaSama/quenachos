@@ -2,18 +2,31 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { enviarWhatsApp } from "@/lib/waha";
 import { getAdmin, isDbConfigured } from "./db";
 
 export type ActionResult =
   | { ok: true; message?: string }
   | { ok: false; error: string };
 
+// Devuelve el email solo si la sesión es de un admin autorizado.
+// Si ADMIN_EMAILS está seteada (lista separada por comas), exige que el email
+// esté en ella. Sin esa env, acepta cualquier sesión válida (configurar en prod
+// + deshabilitar signups en Supabase Auth).
 async function adminEmail(): Promise<string | null> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  return user?.email ?? null;
+  const email = user?.email ?? null;
+  if (!email) return null;
+
+  const allow = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (allow.length > 0 && !allow.includes(email.toLowerCase())) return null;
+  return email;
 }
 
 function clean(msg: string | undefined): string {
@@ -33,16 +46,46 @@ export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  const { error } = await getAdmin().rpc("qn_confirmar_pedido", {
+  const { data, error } = await getAdmin().rpc("qn_confirmar_pedido", {
     p_pedido_id: pedidoId,
     p_admin: email,
   });
   if (error) return { ok: false, error: clean(error.message) };
 
+  // Avisar al cliente por WhatsApp que su pago fue confirmado (best-effort).
+  const chatId = (data as { chat_id?: string | null } | null)?.chat_id ?? null;
+  let avisado = false;
+  if (chatId) {
+    avisado = await enviarWhatsApp(
+      chatId,
+      "✅ ¡Tu pago fue confirmado! 🎉 Tu pedido ya está en camino y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
+    );
+  }
+
   revalidatePath("/admin");
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/inventario");
-  return { ok: true, message: "Pedido confirmado y despachado." };
+  return {
+    ok: true,
+    message: avisado
+      ? "Pedido confirmado, stock descontado y cliente avisado por WhatsApp."
+      : "Pedido confirmado y despachado.",
+  };
+}
+
+// Resuelve una atención humana → reactiva el bot para ese cliente.
+export async function resolverAtencion(id: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!id) return { ok: false, error: "Falta la atención." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_atencion_resolver", { p_id: id });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/atencion");
+  return { ok: true, message: "Resuelto. El bot vuelve a atender a ese cliente." };
 }
 
 export async function registrarProduccion(input: {
@@ -59,7 +102,7 @@ export async function registrarProduccion(input: {
 
   const { error } = await getAdmin().rpc("qn_registrar_produccion", {
     p_sabor_id: input.saborId,
-    p_cantidad: input.cantidad,
+    p_cantidad: Math.floor(input.cantidad),
     p_lote: input.lote?.trim() || null,
     p_vencimiento: input.vencimiento || null,
     p_creado_por: email,
@@ -70,6 +113,80 @@ export async function registrarProduccion(input: {
   revalidatePath("/admin/inventario");
   revalidatePath("/admin/produccion");
   return { ok: true, message: "Producción registrada." };
+}
+
+// Venta física en persona (mostrador). Crea el pedido a precio cliente, lo
+// confirma y descuenta inventario en un solo paso. No pasa por el bot.
+export async function registrarVentaFisica(input: {
+  items: { saborId: string; cantidad: number }[];
+  nota?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const items = (input.items ?? [])
+    .filter((i) => i.saborId && Number(i.cantidad) > 0)
+    .map((i) => ({ sabor_id: i.saborId, cantidad: Math.floor(Number(i.cantidad)) }));
+  if (items.length === 0) return { ok: false, error: "Agregá al menos un producto." };
+
+  const { error } = await getAdmin().rpc("qn_registrar_venta_fisica", {
+    p_items: items,
+    p_admin: email,
+    p_nota: input.nota?.trim() || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/venta-fisica");
+  revalidatePath("/admin/inventario");
+  return { ok: true, message: "Venta registrada y descontada del stock." };
+}
+
+// Corrige una producción cargada por error (ajusta el stock).
+export async function editarProduccion(input: {
+  movId: string;
+  cantidad: number;
+  lote?: string | null;
+  vencimiento?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.movId) return { ok: false, error: "Falta el registro." };
+  if (!(input.cantidad > 0)) return { ok: false, error: "La cantidad debe ser mayor a 0." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_editar_produccion", {
+    p_mov_id: input.movId,
+    p_cantidad: Math.floor(input.cantidad),
+    p_lote: input.lote?.trim() || null,
+    p_vencimiento: input.vencimiento || null,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/inventario");
+  revalidatePath("/admin/produccion");
+  return { ok: true, message: "Producción corregida." };
+}
+
+export async function eliminarProduccion(movId: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!movId) return { ok: false, error: "Falta el registro." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_eliminar_produccion", {
+    p_mov_id: movId,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/inventario");
+  revalidatePath("/admin/produccion");
+  return { ok: true, message: "Producción eliminada." };
 }
 
 export async function cerrarFactura(input: {
@@ -179,6 +296,37 @@ export async function setDireccionCuenta(input: {
 
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Dirección actualizada." };
+}
+
+// QR de pago: la imagen que el bot manda al cliente. Darko la cambia desde /admin/ajustes.
+// Se guarda siempre en la misma ruta pública que usa el bot (qn-assets/qr-pago.jpeg).
+const QR_BUCKET = "qn-assets";
+const QR_PATH = "qr-pago.jpeg";
+
+export async function actualizarQrPago(formData: FormData): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const file = formData.get("qr");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Elegí una imagen del QR." };
+  }
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    return { ok: false, error: "Solo JPG, PNG o WebP." };
+  }
+  if (file.size > 4 * 1024 * 1024) {
+    return { ok: false, error: "La imagen pesa demasiado (máx 4 MB)." };
+  }
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const { error } = await getAdmin()
+    .storage.from(QR_BUCKET)
+    .upload(QR_PATH, bytes, { upsert: true, contentType: file.type });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/ajustes");
+  return { ok: true, message: "QR de pago actualizado. El bot ya lo manda." };
 }
 
 // Confirma el PAGO de una factura (cobro consolidado). NO toca inventario.
