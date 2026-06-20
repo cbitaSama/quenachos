@@ -20,6 +20,12 @@ function clean(msg: string | undefined): string {
   return (msg ?? "").replace(/^.*?ERROR:\s*/i, "").trim() || "Error en la base de datos.";
 }
 
+// Solo aceptamos links http(s) para el GPS (evita javascript:/data: → XSS al renderizar).
+function safeUrl(u?: string | null): string | null {
+  const v = (u ?? "").trim();
+  return /^https?:\/\//i.test(v) ? v : null;
+}
+
 // Confirma el comprobante → confirmar_pedido es el ÚNICO punto que baja stock.
 export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
@@ -114,7 +120,7 @@ export async function crearCuenta(input: {
     p_ciclo: input.ciclo || "mensual",
     p_dia_corte: input.diaCorte ?? 1,
     p_direccion: input.direccion?.trim() || null,
-    p_gps: input.gps?.trim() || null,
+    p_gps: safeUrl(input.gps),
   });
   if (error) return { ok: false, error: clean(error.message) };
 
@@ -167,7 +173,7 @@ export async function setDireccionCuenta(input: {
   const { error } = await getAdmin().rpc("qn_set_direccion_cuenta", {
     p_cliente_id: input.clienteId,
     p_direccion: input.direccion?.trim() || null,
-    p_gps: input.gps?.trim() || null,
+    p_gps: safeUrl(input.gps),
   });
   if (error) return { ok: false, error: clean(error.message) };
 

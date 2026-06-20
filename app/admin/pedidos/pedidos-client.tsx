@@ -105,7 +105,7 @@ export function PedidosClient({ pedidos }: { pedidos: PedidoAdmin[] }) {
                   <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--color-gris-500)]">
                     {p.telefono && <span>📞 {p.telefono}</span>}
                     {p.direccionTexto && <span>📍 {p.direccionTexto}</span>}
-                    {p.gpsUrl && (
+                    {p.gpsUrl && /^https?:\/\//i.test(p.gpsUrl) && (
                       <a
                         href={p.gpsUrl}
                         target="_blank"
