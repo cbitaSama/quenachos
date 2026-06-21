@@ -53,12 +53,16 @@ export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   if (error) return { ok: false, error: clean(error.message) };
 
   // Avisar al cliente por WhatsApp que su pago fue confirmado (best-effort).
-  const chatId = (data as { chat_id?: string | null } | null)?.chat_id ?? null;
+  // Usamos el teléfono real (@c.us): el chat_id guardado puede ser un @lid que no
+  // resuelve en envíos "en frío" desde el panel.
+  const res = data as { chat_id?: string | null; telefono?: string | null } | null;
+  const tel = (res?.telefono ?? "").replace(/\D/g, "");
+  const chatId = tel ? `${tel}@c.us` : (res?.chat_id ?? null);
   let avisado = false;
   if (chatId) {
     avisado = await enviarWhatsApp(
       chatId,
-      "✅ ¡Tu pedido fue confirmado! 🎉 Ya está en camino y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
+      "✅ ¡Tu pago fue confirmado! 🎉 Tu pedido ya salió y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
     );
   }
 
