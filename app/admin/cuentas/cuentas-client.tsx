@@ -182,8 +182,8 @@ function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
         </div>
       )}
 
-      {/* Cobrar ahora */}
-      {cuenta.consumoCicloBs > 0 && (
+      {/* Cobrar ahora (oculto si ya hay un cobro esperando pago) */}
+      {cuenta.consumoCicloBs > 0 && !fa && (
         <CobrarButton clienteId={cuenta.clienteId} consumo={cuenta.consumoCicloBs} />
       )}
 
@@ -323,6 +323,7 @@ function NuevaCuentaForm() {
     ciclo: "mensual",
     diaCorte: "1",
     direccion: "",
+    gps: "",
     nit: "",
   });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -351,11 +352,12 @@ function NuevaCuentaForm() {
                 ciclo: f.ciclo,
                 diaCorte: Number(f.diaCorte) || 1,
                 direccion: f.direccion,
+                gps: f.gps,
                 nit: f.nit,
               });
               setMsg(r.ok ? { ok: true, text: r.message ?? "Listo" } : { ok: false, text: r.error });
               if (r.ok) {
-                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", direccion: "", nit: "" });
+                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", direccion: "", gps: "", nit: "" });
                 setOpen(false);
               }
             });
@@ -382,6 +384,9 @@ function NuevaCuentaForm() {
           </Field>
           <Field label="Dirección de entrega (siempre la misma)">
             <input className={inputClass} value={f.direccion} onChange={set("direccion")} placeholder="5to anillo, av..." />
+          </Field>
+          <Field label="Ubicación GPS (link de Maps — opcional)">
+            <input className={inputClass} value={f.gps} onChange={set("gps")} placeholder="https://maps.app.goo.gl/..." />
           </Field>
           <Field label="NIT (para factura — opcional)">
             <input className={inputClass} value={f.nit} onChange={set("nit")} placeholder="Ej. 1023456789" />

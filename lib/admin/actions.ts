@@ -291,22 +291,26 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
     `Hola! 📋 Cierre de cuenta de *${r.empresa ?? "tu cuenta"}*.\n` +
     `Total a pagar: *${totalTxt}*.\n` +
     `Te paso el QR para el pago 🙏 Cuando pagues, mandame la captura del comprobante por acá.`;
-  let avisados = 0;
-  for (const ct of r.contactos ?? []) {
-    const chatId = aChatId(ct.telefono);
-    if (!chatId) continue;
-    const okTexto = await enviarWhatsApp(chatId, texto);
-    await enviarWhatsAppImagen(chatId, QR_PAGO_URL, "QR para el pago de tu cuenta");
-    if (okTexto) avisados++;
+  // Enviamos el cobro SOLO al contacto principal (el primero), no a todos.
+  const principal = (r.contactos ?? [])[0];
+  const chatId = principal ? aChatId(principal.telefono) : null;
+  let avisado = false;
+  let qrOk = false;
+  if (chatId) {
+    avisado = await enviarWhatsApp(chatId, texto);
+    if (QR_PAGO_URL.startsWith("http")) {
+      qrOk = await enviarWhatsAppImagen(chatId, QR_PAGO_URL, "QR para el pago de tu cuenta");
+    }
   }
 
   revalidatePath("/admin/cuentas");
   return {
     ok: true,
-    message:
-      avisados > 0
+    message: avisado
+      ? qrOk
         ? `Cobro de ${totalTxt} enviado por WhatsApp (con QR).`
-        : `Factura generada por ${totalTxt}, pero no se pudo enviar el WhatsApp (revisá WAHA).`,
+        : `Cobro de ${totalTxt} enviado, pero el QR no se pudo mandar (revisá WAHA / el QR en Ajustes).`
+      : `Factura generada por ${totalTxt}, pero no se pudo enviar el WhatsApp (revisá WAHA).`,
   };
 }
 
