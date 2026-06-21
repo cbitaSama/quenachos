@@ -112,24 +112,26 @@ function PausarCliente() {
             }
           });
         }}
-        className="flex flex-col gap-2 sm:flex-row"
+        className="flex flex-col gap-2"
       >
-        <input
-          className={`${inputClass} flex-1`}
-          value={tel}
-          onChange={(e) => setTel(e.target.value)}
-          placeholder="Número (591...)"
-        />
-        <input
-          className={`${inputClass} flex-1`}
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          placeholder="Nombre (opcional)"
-        />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input
+            className={`${inputClass} sm:flex-1`}
+            value={tel}
+            onChange={(e) => setTel(e.target.value)}
+            placeholder="Número (591...)"
+          />
+          <input
+            className={`${inputClass} sm:flex-1`}
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Nombre (opcional)"
+          />
+        </div>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--color-negro)] px-4 py-2.5 text-body-sm font-bold text-[var(--color-crema)] disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[var(--color-negro)] px-4 py-2.5 text-body-sm font-bold text-[var(--color-crema)] disabled:opacity-60 sm:w-auto sm:self-start"
         >
           <PauseCircle className="size-4" strokeWidth={2.25} />
           {pending ? "…" : "Pausar"}
