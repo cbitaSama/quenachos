@@ -256,6 +256,7 @@ export async function agregarContacto(input: {
   if (!input.clienteId) return { ok: false, error: "Falta la cuenta." };
   if (!input.nombre?.trim()) return { ok: false, error: "Falta el nombre." };
   if (!input.telefono?.trim()) return { ok: false, error: "Falta el teléfono." };
+  if (!(await adminEmail())) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
   const { error } = await getAdmin().rpc("qn_agregar_contacto", {
     p_cliente_id: input.clienteId,
@@ -271,6 +272,7 @@ export async function agregarContacto(input: {
 export async function quitarContacto(contactoId: string): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
   if (!contactoId) return { ok: false, error: "Falta el contacto." };
+  if (!(await adminEmail())) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
   const { error } = await getAdmin().rpc("qn_quitar_contacto", {
     p_contacto_id: contactoId,
