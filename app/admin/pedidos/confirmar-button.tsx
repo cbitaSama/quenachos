@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { confirmarPedido } from "@/lib/admin/actions";
 
-export function ConfirmarButton({ pedidoId }: { pedidoId: string }) {
+export function ConfirmarButton({
+  pedidoId,
+  label = "Confirmar pago",
+}: {
+  pedidoId: string;
+  label?: string;
+}) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -23,7 +29,7 @@ export function ConfirmarButton({ pedidoId }: { pedidoId: string }) {
         className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-rojo)] px-4 py-2 text-body-sm font-bold text-[var(--color-crema)] transition-all hover:bg-[var(--color-rojo-oscuro)] disabled:opacity-60"
       >
         <Check className="size-4" strokeWidth={2.75} />
-        {pending ? "Confirmando…" : "Confirmar pago"}
+        {pending ? "Procesando…" : label}
       </button>
       {error && (
         <span className="max-w-[200px] text-right text-[11px] text-[var(--color-rojo)]">

@@ -93,6 +93,9 @@ export function PedidosClient({ pedidos }: { pedidos: PedidoAdmin[] }) {
                   <Badge tone={ESTADO_TONE[p.estado] ?? "neutral"}>
                     {ESTADO_LABEL[p.estado] ?? p.estado}
                   </Badge>
+                  {p.modalidadPago === "cuenta_corriente" && (
+                    <Badge tone="info">Cuenta corriente</Badge>
+                  )}
                 </div>
                 <p className="text-body-sm text-[var(--color-gris-500)]">
                   {formatBs(p.totalBs)} ·{" "}
@@ -143,6 +146,10 @@ export function PedidosClient({ pedidos }: { pedidos: PedidoAdmin[] }) {
                   <ConfirmarButton pedidoId={p.id} />
                 </div>
               )}
+              {p.estado === "pendiente_pago" &&
+                p.modalidadPago === "cuenta_corriente" && (
+                  <ConfirmarButton pedidoId={p.id} label="Despachar" />
+                )}
             </li>
           ))}
         </ul>

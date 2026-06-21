@@ -58,7 +58,7 @@ export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   if (chatId) {
     avisado = await enviarWhatsApp(
       chatId,
-      "✅ ¡Tu pago fue confirmado! 🎉 Tu pedido ya está en camino y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
+      "✅ ¡Tu pedido fue confirmado! 🎉 Ya está en camino y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
     );
   }
 
