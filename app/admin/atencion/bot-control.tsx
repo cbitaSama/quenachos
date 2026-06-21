@@ -78,6 +78,11 @@ function GlobalToggle({ activo }: { activo: boolean | null }) {
         </button>
       </div>
       <MsgLine msg={msg} />
+      <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-gris-500)]">
+        Apagado, el bot no le responde a nadie. Los mensajes que lleguen mientras
+        está apagado se responden al encenderlo <strong>si fue un rato corto</strong>;
+        si pasaron muchas horas o días, esos mensajes ya no se contestan solos.
+      </p>
     </Card>
   );
 }

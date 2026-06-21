@@ -13,6 +13,7 @@ import {
   cerrarFactura,
   cobrarCuenta,
   crearCuenta,
+  eliminarCuenta,
   pagarFactura,
   quitarContacto,
   setDireccionCuenta,
@@ -192,7 +193,57 @@ function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
 
       <DireccionEditor cuenta={cuenta} />
       <ContactosManager cuenta={cuenta} />
-      <CerrarFacturaForm clienteId={cuenta.clienteId} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-negro)]/10 pt-3">
+        <CerrarFacturaForm clienteId={cuenta.clienteId} />
+        <EliminarCuentaBtn
+          clienteId={cuenta.clienteId}
+          nombre={cuenta.razonSocial ?? cuenta.nombre ?? "esta cuenta"}
+        />
+      </div>
+    </div>
+  );
+}
+
+function EliminarCuentaBtn({ clienteId, nombre }: { clienteId: string; nombre: string }) {
+  const [confirm, setConfirm] = useState(false);
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  if (!confirm) {
+    return (
+      <button
+        type="button"
+        onClick={() => setConfirm(true)}
+        className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-gris-500)] hover:text-[var(--color-rojo)]"
+      >
+        <Trash2 className="size-3.5" strokeWidth={2.25} /> Eliminar cuenta
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-body-sm">
+      <span className="text-[var(--color-rojo)]">
+        ¿Borrar “{nombre}” y todo su historial?
+      </span>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            setError(null);
+            const r = await eliminarCuenta(clienteId);
+            if (!r.ok) setError(r.error);
+          })
+        }
+        className="rounded-full bg-[var(--color-rojo)] px-3 py-1.5 font-bold text-white disabled:opacity-60"
+      >
+        {pending ? "…" : "Sí, borrar"}
+      </button>
+      <button type="button" onClick={() => setConfirm(false)} className="text-[var(--color-gris-500)]">
+        Cancelar
+      </button>
+      {error && <span className="text-[11px] text-[var(--color-rojo)]">{error}</span>}
     </div>
   );
 }

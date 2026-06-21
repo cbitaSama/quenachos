@@ -76,6 +76,12 @@ export async function getPedidosPorConfirmar(): Promise<PedidoAdmin[]> {
   return getPedidos("comprobante_recibido");
 }
 
+// Pedidos de distribuidoras (cuenta corriente) pendientes de despachar.
+export async function getPorDespachar(): Promise<number> {
+  const n = await rpc<number>("qn_por_despachar");
+  return n ?? 0;
+}
+
 export async function getPedidos(estado?: string): Promise<PedidoAdmin[]> {
   const data = await rpc<PedidoAdmin[]>("qn_pedidos", { p_estado: estado ?? null });
   if (!data) return [];

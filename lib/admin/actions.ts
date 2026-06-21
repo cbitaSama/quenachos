@@ -282,14 +282,21 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
     error?: string;
     total_bs?: number;
     empresa?: string;
+    total_bolsas?: number;
+    detalle?: { sabor: string; cantidad: number; subtotal: number }[];
     contactos?: { telefono: string; nombre: string }[];
   } | null;
   if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo generar el cobro." };
 
   const totalTxt = `Bs ${Number(r.total_bs ?? 0).toLocaleString("es-BO")}`;
+  // Desglose claro: una línea por sabor (cantidad + subtotal) + total de bolsas y precio.
+  const lineas = (r.detalle ?? [])
+    .map((d) => `• ${d.cantidad} ${d.sabor} — Bs ${Number(d.subtotal).toLocaleString("es-BO")}`)
+    .join("\n");
   const texto =
     `Hola! 📋 Cierre de cuenta de *${r.empresa ?? "tu cuenta"}*.\n` +
-    `Total a pagar: *${totalTxt}*.\n` +
+    `Este período pediste:\n${lineas}\n` +
+    `*Total: ${r.total_bolsas ?? 0} bolsas — ${totalTxt}*\n` +
     `Te paso el QR para el pago 🙏 Cuando pagues, mandame la captura del comprobante por acá.`;
   // Enviamos el cobro SOLO al contacto principal (el primero), no a todos.
   const principal = (r.contactos ?? [])[0];
@@ -312,6 +319,21 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
         : `Cobro de ${totalTxt} enviado, pero el QR no se pudo mandar (revisá WAHA / el QR en Ajustes).`
       : `Factura generada por ${totalTxt}, pero no se pudo enviar el WhatsApp (revisá WAHA).`,
   };
+}
+
+// Borra una cuenta corriente completa (contactos, pedidos, facturas e historial).
+// Destructivo: la UI confirma antes de llamarla.
+export async function eliminarCuenta(clienteId: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!clienteId) return { ok: false, error: "Falta la cuenta." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_eliminar_cuenta", { p_cliente_id: clienteId });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Cuenta eliminada." };
 }
 
 // ── Cuentas corrientes (proveedores / clientes a crédito) ───────────────────
