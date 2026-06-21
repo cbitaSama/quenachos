@@ -162,9 +162,13 @@ function SaborCard({ sabor, index }: { sabor: Sabor; index: number }) {
             src={sabor.decorativo}
             alt=""
             aria-hidden="true"
-            width={120}
-            height={120}
-            className="absolute -right-2 top-4 size-20 drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:rotate-12"
+            width={160}
+            height={160}
+            className={`absolute drop-shadow-[0_10px_20px_rgba(0,0,0,0.35)] transition-transform duration-500 group-hover:rotate-12 ${
+              sabor.id === "clasico"
+                ? "-right-4 top-1 size-28"
+                : "-right-2 top-4 size-20"
+            }`}
           />
         </div>
 

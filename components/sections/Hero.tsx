@@ -340,9 +340,13 @@ export function Hero({ sabores }: Props) {
                   width={260}
                   height={260}
                   aria-hidden="true"
-                  sizes="(max-width: 640px) 24vw, 16vw"
+                  sizes="(max-width: 640px) 34vw, 23vw"
                   style={{ width: "auto", height: "auto" }}
-                  className="h-auto w-[24vw] max-w-[120px] drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] sm:w-[16vw] sm:max-w-[180px]"
+                  className={`h-auto drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)] ${
+                    active.id === "clasico"
+                      ? "w-[34vw] max-w-[180px] sm:w-[23vw] sm:max-w-[255px]"
+                      : "w-[24vw] max-w-[120px] sm:w-[16vw] sm:max-w-[180px]"
+                  }`}
                 />
               </motion.div>
             </motion.div>
