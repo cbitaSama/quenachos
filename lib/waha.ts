@@ -21,3 +21,37 @@ export async function enviarWhatsApp(
     return false;
   }
 }
+
+// Envía una imagen (ej. el QR de pago) por su URL pública. Best-effort.
+export async function enviarWhatsAppImagen(
+  chatId: string | null | undefined,
+  fileUrl: string,
+  caption?: string,
+): Promise<boolean> {
+  if (!WAHA_URL || !WAHA_API_KEY || !chatId) return false;
+  try {
+    const res = await fetch(`${WAHA_URL}/api/sendImage`, {
+      method: "POST",
+      headers: { "X-Api-Key": WAHA_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        session: WAHA_SESSION,
+        chatId,
+        file: { url: fileUrl },
+        caption: caption ?? "",
+      }),
+      cache: "no-store",
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Convierte un teléfono (solo dígitos) en un chatId de WhatsApp.
+export function aChatId(telefono: string | null | undefined): string | null {
+  const tel = (telefono ?? "").replace(/\D/g, "");
+  return tel ? `${tel}@c.us` : null;
+}
+
+// URL pública del QR de pago (bucket qn-assets es público).
+export const QR_PAGO_URL = `${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "")}/storage/v1/object/public/qn-assets/qr-pago.jpeg`;

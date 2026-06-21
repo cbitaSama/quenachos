@@ -54,27 +54,45 @@ export type Contacto = {
   telefono: string;
 };
 
+export type FacturaAbierta = {
+  id: string;
+  totalBs: number;
+  estado: string;
+  comprobantePath: string | null;
+  comprobanteUrl?: string | null;
+  fechaPagoLimite: string | null;
+};
+
 export type CuentaCorriente = {
   clienteId: string;
   nombre: string | null;
   razonSocial: string | null;
   nit: string | null;
   saldoPendienteBs: number;
+  consumoCicloBs: number;
+  pedidosSinFacturar: number;
+  totalAdeudadoBs: number;
   ciclo: string;
   diaCorte: number;
+  venceHoy: boolean;
+  diasParaCorte: number;
   direccionEntrega: string | null;
   gpsEntrega: string | null;
+  facturaAbierta: FacturaAbierta | null;
   contactos: Contacto[];
 };
 
 export type FacturaAdmin = {
   id: string;
+  clienteId: string | null;
   cliente: string | null;
   periodoInicio: string;
   periodoFin: string;
   totalBs: number;
   estado: string;
   fechaPagoLimite: string | null;
+  comprobantePath: string | null;
+  comprobanteUrl?: string | null;
 };
 
 export type AtencionRow = {

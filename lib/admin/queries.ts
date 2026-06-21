@@ -126,12 +126,29 @@ export async function getVentasFisicas(): Promise<VentaFisicaRow[]> {
 
 export async function getCuentasPorCobrar(): Promise<CuentaCorriente[]> {
   const data = await rpc<CuentaCorriente[]>("qn_cuentas");
-  return data ?? [];
+  if (!data) return [];
+  return Promise.all(
+    data.map(async (c) => ({
+      ...c,
+      facturaAbierta: c.facturaAbierta
+        ? {
+            ...c.facturaAbierta,
+            comprobanteUrl: await signComprobante(c.facturaAbierta.comprobantePath),
+          }
+        : null,
+    })),
+  );
 }
 
 export async function getFacturas(): Promise<FacturaAdmin[]> {
   const data = await rpc<FacturaAdmin[]>("qn_facturas");
-  return data ?? [];
+  if (!data) return [];
+  return Promise.all(
+    data.map(async (f) => ({
+      ...f,
+      comprobanteUrl: await signComprobante(f.comprobantePath),
+    })),
+  );
 }
 
 export async function getAtencion(): Promise<AtencionRow[]> {

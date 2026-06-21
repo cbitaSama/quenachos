@@ -11,7 +11,9 @@ const MOTIVO: Record<string, { label: string; tone: "warn" | "danger" | "info" }
   proveedor: { label: "Proveedor", tone: "info" },
   empresa: { label: "Empresa / consignación", tone: "info" },
   reclamo: { label: "Reclamo / problema", tone: "danger" },
+  "no recibio pedido": { label: "No recibió el pedido", tone: "danger" },
   dueno: { label: "Quiere hablar con el dueño", tone: "warn" },
+  pausa_manual: { label: "Pausado a mano", tone: "warn" },
   otro: { label: "Otro", tone: "warn" },
 };
 

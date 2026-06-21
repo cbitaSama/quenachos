@@ -16,8 +16,9 @@ export default async function CuentasPage() {
           Cuentas por cobrar
         </h1>
         <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
-          Clientes a crédito (colegios, proveedores). Cerrá el período y confirmá
-          el pago — esto no toca el inventario.
+          Clientes a crédito (colegios, proveedores). Cuando llega el corte,
+          tocá <strong>Cobrar ahora</strong> y le mandamos el total + el QR. La
+          deuda recién vuelve a 0 cuando confirmás el pago.
         </p>
       </header>
 

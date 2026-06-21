@@ -2,7 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { enviarWhatsApp } from "@/lib/waha";
+import { enviarWhatsApp, enviarWhatsAppImagen, aChatId, QR_PAGO_URL } from "@/lib/waha";
+import { setBotActivo } from "@/lib/n8n";
 import { getAdmin, isDbConfigured } from "./db";
 
 export type ActionResult =
@@ -90,6 +91,54 @@ export async function resolverAtencion(id: string): Promise<ActionResult> {
   revalidatePath("/admin");
   revalidatePath("/admin/atencion");
   return { ok: true, message: "Resuelto. El bot vuelve a atender a ese cliente." };
+}
+
+// Pausa manual del bot para un número: lo atiende el dueño a mano.
+// Se reactiva con "Solucionado, activar bot" (resolverAtencion).
+export async function pausarNumero(input: {
+  telefono: string;
+  nombre?: string;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const tel = (input.telefono || "").replace(/\D/g, "");
+  if (!tel) return { ok: false, error: "Poné un número válido (solo dígitos)." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_pausar_numero", {
+    p_telefono: tel,
+    p_nombre: input.nombre || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; ya_pausado?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo pausar." };
+
+  revalidatePath("/admin/atencion");
+  return {
+    ok: true,
+    message: r.ya_pausado
+      ? "Ese número ya estaba pausado."
+      : "Bot pausado para ese número. Atendelo vos; cuando termines, tocá “Activar bot”.",
+  };
+}
+
+// Enciende/apaga el bot completo (workflow de n8n). Off = no responde a nadie.
+export async function toggleBotGlobal(active: boolean): Promise<ActionResult> {
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const r = await setBotActivo(active);
+  if (!r.ok)
+    return {
+      ok: false,
+      error: `No se pudo ${active ? "encender" : "apagar"} el bot: ${r.error}`,
+    };
+
+  revalidatePath("/admin/atencion");
+  return {
+    ok: true,
+    message: active ? "Bot encendido. Ya responde a todos." : "Bot apagado. No responde a nadie.",
+  };
 }
 
 export async function registrarProduccion(input: {
@@ -214,6 +263,51 @@ export async function cerrarFactura(input: {
 
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Factura cerrada." };
+}
+
+// Cobrar una cuenta a crédito (1 clic): cierra el ciclo y le manda al cliente
+// el total + el QR de pago por WhatsApp. La deuda recién se salda al confirmar el pago.
+export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!clienteId) return { ok: false, error: "Falta la cuenta." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_cobrar_cuenta", {
+    p_cliente_id: clienteId,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as {
+    ok?: boolean;
+    error?: string;
+    total_bs?: number;
+    empresa?: string;
+    contactos?: { telefono: string; nombre: string }[];
+  } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo generar el cobro." };
+
+  const totalTxt = `Bs ${Number(r.total_bs ?? 0).toLocaleString("es-BO")}`;
+  const texto =
+    `Hola! 📋 Cierre de cuenta de *${r.empresa ?? "tu cuenta"}*.\n` +
+    `Total a pagar: *${totalTxt}*.\n` +
+    `Te paso el QR para el pago 🙏 Cuando pagues, mandame la captura del comprobante por acá.`;
+  let avisados = 0;
+  for (const ct of r.contactos ?? []) {
+    const chatId = aChatId(ct.telefono);
+    if (!chatId) continue;
+    const okTexto = await enviarWhatsApp(chatId, texto);
+    await enviarWhatsAppImagen(chatId, QR_PAGO_URL, "QR para el pago de tu cuenta");
+    if (okTexto) avisados++;
+  }
+
+  revalidatePath("/admin/cuentas");
+  return {
+    ok: true,
+    message:
+      avisados > 0
+        ? `Cobro de ${totalTxt} enviado por WhatsApp (con QR).`
+        : `Factura generada por ${totalTxt}, pero no se pudo enviar el WhatsApp (revisá WAHA).`,
+  };
 }
 
 // ── Cuentas corrientes (proveedores / clientes a crédito) ───────────────────
@@ -349,13 +443,25 @@ export async function pagarFactura(input: {
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
 
-  const { error } = await getAdmin().rpc("qn_pagar_factura", {
+  const { data, error } = await getAdmin().rpc("qn_pagar_factura", {
     p_factura_id: input.facturaId,
     p_admin: email,
     p_comprobante: input.comprobantePath || null,
   });
   if (error) return { ok: false, error: clean(error.message) };
 
+  // Avisar al cliente que su pago fue confirmado (best-effort).
+  const contactos = (data as { contactos?: string[] } | null)?.contactos ?? [];
+  for (const tel of contactos) {
+    const chatId = aChatId(tel);
+    if (chatId) {
+      await enviarWhatsApp(
+        chatId,
+        "✅ ¡Pago recibido y confirmado! 🎉 Tu cuenta quedó al día. ¡Gracias por elegir Que Nachos! 🌶️",
+      );
+    }
+  }
+
   revalidatePath("/admin/cuentas");
-  return { ok: true, message: "Pago confirmado." };
+  return { ok: true, message: "Pago confirmado. Deuda saldada." };
 }
