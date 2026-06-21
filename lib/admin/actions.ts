@@ -222,6 +222,7 @@ export async function crearCuenta(input: {
   diaCorte?: number;
   direccion?: string | null;
   gps?: string | null;
+  nit?: string | null;
 }): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
   if (!input.razonSocial?.trim() && !input.contacto?.trim()) {
@@ -238,6 +239,7 @@ export async function crearCuenta(input: {
     p_dia_corte: input.diaCorte ?? 1,
     p_direccion: input.direccion?.trim() || null,
     p_gps: safeUrl(input.gps),
+    p_nit: input.nit?.trim() || null,
   });
   if (error) return { ok: false, error: clean(error.message) };
 
@@ -283,6 +285,7 @@ export async function setDireccionCuenta(input: {
   clienteId: string;
   direccion: string;
   gps?: string | null;
+  nit?: string | null;
 }): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
   if (!input.clienteId) return { ok: false, error: "Falta la cuenta." };
@@ -291,6 +294,7 @@ export async function setDireccionCuenta(input: {
     p_cliente_id: input.clienteId,
     p_direccion: input.direccion?.trim() || null,
     p_gps: safeUrl(input.gps),
+    p_nit: input.nit?.trim() || null,
   });
   if (error) return { ok: false, error: clean(error.message) };
 

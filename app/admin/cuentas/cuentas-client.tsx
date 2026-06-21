@@ -84,6 +84,7 @@ function NuevaCuentaForm() {
     ciclo: "mensual",
     diaCorte: "1",
     direccion: "",
+    nit: "",
   });
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setF((p) => ({ ...p, [k]: e.target.value }));
@@ -111,10 +112,11 @@ function NuevaCuentaForm() {
                 ciclo: f.ciclo,
                 diaCorte: Number(f.diaCorte) || 1,
                 direccion: f.direccion,
+                nit: f.nit,
               });
               setMsg(r.ok ? { ok: true, text: r.message ?? "Listo" } : { ok: false, text: r.error });
               if (r.ok) {
-                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", direccion: "" });
+                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", direccion: "", nit: "" });
                 setOpen(false);
               }
             });
@@ -141,6 +143,9 @@ function NuevaCuentaForm() {
           </Field>
           <Field label="Dirección de entrega (siempre la misma)">
             <input className={inputClass} value={f.direccion} onChange={set("direccion")} placeholder="5to anillo, av..." />
+          </Field>
+          <Field label="NIT (para factura — opcional)">
+            <input className={inputClass} value={f.nit} onChange={set("nit")} placeholder="Ej. 1023456789" />
           </Field>
           <div className="flex items-center gap-3 sm:col-span-2">
             <button type="submit" disabled={pending} className="rounded-full bg-[var(--color-rojo)] px-5 py-2.5 text-body-sm font-bold text-[var(--color-crema)] disabled:opacity-60">
@@ -185,29 +190,35 @@ function DireccionEditor({ cuenta }: { cuenta: CuentaCorriente }) {
   const [pending, start] = useTransition();
   const [dir, setDir] = useState(cuenta.direccionEntrega ?? "");
   const [gps, setGps] = useState(cuenta.gpsEntrega ?? "");
+  const [nit, setNit] = useState(cuenta.nit ?? "");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   return (
     <div className="rounded-xl bg-[var(--color-negro)]/[0.03] p-3">
       <p className="mb-2 flex items-center gap-1.5 text-caption text-[var(--color-gris-500)]">
-        <MapPin className="size-3.5" /> Entrega (siempre acá, salvo que indiquen otra)
+        <MapPin className="size-3.5" /> Entrega y NIT (el bot los usa sin re-preguntar)
       </p>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           start(async () => {
             setMsg(null);
-            const r = await setDireccionCuenta({ clienteId: cuenta.clienteId, direccion: dir, gps });
+            const r = await setDireccionCuenta({ clienteId: cuenta.clienteId, direccion: dir, gps, nit });
             setMsg(r.ok ? { ok: true, text: "Guardado" } : { ok: false, text: r.error });
           });
         }}
-        className="flex flex-col gap-2 sm:flex-row"
+        className="flex flex-col gap-2"
       >
-        <input className={`${inputClass} flex-1`} value={dir} onChange={(e) => setDir(e.target.value)} placeholder="Dirección escrita" />
-        <input className={`${inputClass} flex-1`} value={gps} onChange={(e) => setGps(e.target.value)} placeholder="Link GPS (Maps)" />
-        <button type="submit" disabled={pending} className="rounded-full bg-[var(--color-negro)] px-4 py-2.5 text-body-sm font-semibold text-[var(--color-crema)] disabled:opacity-60">
-          {pending ? "…" : "Guardar"}
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input className={`${inputClass} flex-1`} value={dir} onChange={(e) => setDir(e.target.value)} placeholder="Dirección escrita" />
+          <input className={`${inputClass} flex-1`} value={gps} onChange={(e) => setGps(e.target.value)} placeholder="Link GPS (Maps)" />
+        </div>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input className={`${inputClass} flex-1`} value={nit} onChange={(e) => setNit(e.target.value)} placeholder="NIT (para factura — vacío = sin factura)" />
+          <button type="submit" disabled={pending} className="rounded-full bg-[var(--color-negro)] px-4 py-2.5 text-body-sm font-semibold text-[var(--color-crema)] disabled:opacity-60">
+            {pending ? "…" : "Guardar"}
+          </button>
+        </div>
       </form>
       <Msg msg={msg} />
     </div>

@@ -58,6 +58,7 @@ export type CuentaCorriente = {
   clienteId: string;
   nombre: string | null;
   razonSocial: string | null;
+  nit: string | null;
   saldoPendienteBs: number;
   ciclo: string;
   diaCorte: number;
