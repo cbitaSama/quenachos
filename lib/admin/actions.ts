@@ -53,18 +53,23 @@ export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   });
   if (error) return { ok: false, error: clean(error.message) };
 
-  // Avisar al cliente por WhatsApp que su pago fue confirmado (best-effort).
-  // Usamos el teléfono real (@c.us): el chat_id guardado puede ser un @lid que no
-  // resuelve en envíos "en frío" desde el panel.
-  const res = data as { chat_id?: string | null; telefono?: string | null } | null;
+  // Avisar al cliente por WhatsApp (best-effort). Usamos el teléfono real (@c.us):
+  // el chat_id guardado puede ser un @lid que no resuelve en envíos "en frío".
+  // Para cuenta corriente, qn_confirmar_pedido ya devuelve el teléfono del contacto que pidió.
+  const res = data as {
+    chat_id?: string | null;
+    telefono?: string | null;
+    modalidad?: string | null;
+  } | null;
   const tel = (res?.telefono ?? "").replace(/\D/g, "");
   const chatId = tel ? `${tel}@c.us` : (res?.chat_id ?? null);
+  const esCredito = res?.modalidad === "cuenta_corriente";
+  const mensaje = esCredito
+    ? "📦 ¡Tu pedido fue despachado! 🎉 Ya salió y te llega por *Yango* en unos *20 minutos*. ¡Gracias! 🌶️"
+    : "✅ ¡Tu pago fue confirmado! 🎉 Tu pedido ya salió y te llega por *Yango* en unos *20 minutos*. ¡Gracias por elegir Que Nachos! 🌶️";
   let avisado = false;
   if (chatId) {
-    avisado = await enviarWhatsApp(
-      chatId,
-      "✅ ¡Tu pago fue confirmado! 🎉 Tu pedido ya salió y te llega por *Yango* en un ratito. ¡Gracias por elegir Que Nachos! 🌶️",
-    );
+    avisado = await enviarWhatsApp(chatId, mensaje);
   }
 
   revalidatePath("/admin");
@@ -298,9 +303,9 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
     `Este período pediste:\n${lineas}\n` +
     `*Total: ${r.total_bolsas ?? 0} bolsas — ${totalTxt}*\n` +
     `Te paso el QR para el pago 🙏 Cuando pagues, mandame la captura del comprobante por acá.`;
-  // Enviamos el cobro SOLO al contacto principal (el primero), no a todos.
-  const principal = (r.contactos ?? [])[0];
-  const chatId = principal ? aChatId(principal.telefono) : null;
+  // El cobro va al ENCARGADO de cobro = el primer contacto agregado (no a todos).
+  const encargado = (r.contactos ?? [])[0];
+  const chatId = encargado ? aChatId(encargado.telefono) : null;
   let avisado = false;
   let qrOk = false;
   if (chatId) {
@@ -315,7 +320,7 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
     ok: true,
     message: avisado
       ? qrOk
-        ? `Cobro de ${totalTxt} enviado por WhatsApp (con QR).`
+        ? `Cobro de ${totalTxt} enviado a ${encargado?.nombre ?? "el encargado"} (con QR).`
         : `Cobro de ${totalTxt} enviado, pero el QR no se pudo mandar (revisá WAHA / el QR en Ajustes).`
       : `Factura generada por ${totalTxt}, pero no se pudo enviar el WhatsApp (revisá WAHA).`,
   };

@@ -510,11 +510,16 @@ function ContactosManager({ cuenta }: { cuenta: CuentaCorriente }) {
 
       {cuenta.contactos.length > 0 && (
         <ul className="mb-2 space-y-1.5">
-          {cuenta.contactos.map((ct) => (
-            <li key={ct.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+          {cuenta.contactos.map((ct, i) => (
+            <li key={ct.id} className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2">
               <span className="text-body-sm">
                 <span className="font-semibold">{ct.nombre}</span>{" "}
                 <span className="text-[var(--color-gris-500)]">· {ct.telefono}</span>
+                {i === 0 && (
+                  <span className="ml-1.5 rounded-full bg-[var(--color-negro)]/[0.06] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-gris-500)]">
+                    encargado de cobro
+                  </span>
+                )}
               </span>
               <button
                 type="button"
