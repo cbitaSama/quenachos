@@ -98,6 +98,18 @@ export function Footer() {
             </Link>
           </div>
         </div>
+
+        <p className="mt-6 text-center text-body-sm text-[var(--color-crema)]/40">
+          Creado por{" "}
+          <a
+            href="https://vectoria.space"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-[var(--color-crema)]/70 underline-offset-4 transition-colors hover:text-[var(--color-rojo-neon)] hover:underline"
+          >
+            Vectoria.space
+          </a>
+        </p>
       </div>
     </footer>
   );

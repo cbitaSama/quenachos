@@ -111,35 +111,94 @@ export function PorQue() {
           })}
         </div>
 
-        {/* Tabla nutricional oficial (por bolsa de 60 g) */}
+        {/* Tabla nutricional oficial (porción 30 g · 2 por bolsa de 60 g) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6 }}
-          className="mx-auto mt-10 max-w-4xl"
+          className="mx-auto mt-12 max-w-2xl overflow-hidden rounded-[2rem] border border-[var(--color-negro)]/10 bg-white"
+          style={{
+            boxShadow:
+              "0 1px 2px rgba(10,10,10,0.04), 0 12px 32px -8px rgba(10,10,10,0.12)",
+          }}
         >
-          <div className="flex flex-col items-center gap-4 rounded-[2rem] border border-[var(--color-negro)]/10 bg-white px-6 py-6 sm:flex-row sm:justify-between sm:px-10">
-            <div className="text-center sm:text-left">
-              <p className="text-caption text-[var(--color-rojo)]">
-                Tabla nutricional
-              </p>
-              <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
-                Por bolsa de 60 g · verificado en laboratorio (LABROB · UAGRM)
-              </p>
-            </div>
-            <dl className="grid grid-cols-3 gap-x-6 gap-y-3 text-center sm:grid-cols-5 sm:gap-x-8">
+          <div className="border-b border-[var(--color-negro)]/10 px-6 py-5 sm:px-8">
+            <p className="text-caption text-[var(--color-rojo)]">
+              Información nutricional
+            </p>
+            <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
+              Porción de{" "}
+              <strong className="font-semibold text-[var(--color-negro)]">
+                30 g
+              </strong>{" "}
+              · 2 porciones por bolsa (60 g)
+            </p>
+          </div>
+
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="text-caption text-[var(--color-gris-500)]">
+                <th className="px-6 py-3 font-medium sm:px-8">Nutriente</th>
+                <th className="px-3 py-3 text-right font-medium">Porción</th>
+                <th className="hidden px-6 py-3 text-right font-medium sm:table-cell sm:px-8">
+                  100 g
+                </th>
+              </tr>
+            </thead>
+            <tbody>
               {NUTRICION.map((n) => (
-                <div key={n.label}>
-                  <dt className="text-caption text-[var(--color-gris-500)]">
+                <tr
+                  key={n.label}
+                  className={`border-t border-[var(--color-negro)]/[0.07] ${
+                    n.destacado ? "bg-[var(--color-rojo)]/[0.04]" : ""
+                  }`}
+                >
+                  <td
+                    className={`px-6 py-3.5 text-body-md sm:px-8 ${
+                      n.destacado
+                        ? "font-semibold text-[var(--color-rojo)]"
+                        : "text-[var(--color-negro)]"
+                    }`}
+                  >
                     {n.label}
-                  </dt>
-                  <dd className="font-display text-[clamp(20px,2.4vw,30px)] leading-none text-[var(--color-negro)]">
-                    {n.value}
-                  </dd>
-                </div>
+                  </td>
+                  <td
+                    className={`px-3 py-3.5 text-right text-body-md tabular-nums ${
+                      n.destacado
+                        ? "font-bold text-[var(--color-rojo)]"
+                        : "font-medium text-[var(--color-negro)]"
+                    }`}
+                  >
+                    {n.porcion}
+                  </td>
+                  <td className="hidden px-6 py-3.5 text-right text-body-md tabular-nums text-[var(--color-gris-500)] sm:table-cell sm:px-8">
+                    {n.cien}
+                  </td>
+                </tr>
               ))}
-            </dl>
+            </tbody>
+          </table>
+
+          <div className="border-t border-[var(--color-negro)]/10 px-6 py-5 sm:px-8">
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Alto en proteína",
+                "Sin gluten",
+                "Sin lactosa",
+                "Sin azúcares añadidos",
+              ].map((b) => (
+                <span
+                  key={b}
+                  className="rounded-full bg-[var(--color-verde-lima)]/15 px-3 py-1 text-body-sm font-medium text-[var(--color-negro)]"
+                >
+                  {b}
+                </span>
+              ))}
+            </div>
+            <p className="mt-4 text-body-sm text-[var(--color-gris-500)]">
+              Valores verificados en laboratorio · LABROB · UAGRM.
+            </p>
           </div>
         </motion.div>
       </div>
@@ -147,10 +206,15 @@ export function PorQue() {
   );
 }
 
-const NUTRICION = [
-  { label: "Proteína", value: "46g" },
-  { label: "Por 100g", value: "76,3g" },
-  { label: "Gramaje", value: "60g" },
-  { label: "Base", value: "Pollo" },
-  { label: "Gluten", value: "0" },
+const NUTRICION: {
+  label: string;
+  porcion: string;
+  cien: string;
+  destacado?: boolean;
+}[] = [
+  { label: "Energía", porcion: "118 kcal", cien: "392 kcal" },
+  { label: "Proteínas", porcion: "22,9 g", cien: "76,3 g", destacado: true },
+  { label: "Carbohidratos", porcion: "0,5 g", cien: "1,5 g" },
+  { label: "Azúcares añadidos", porcion: "0 g", cien: "0 g" },
+  { label: "Grasa total", porcion: "2,7 g", cien: "9,0 g" },
 ];
