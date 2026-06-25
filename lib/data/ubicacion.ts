@@ -9,7 +9,8 @@ export const UBICACION: Ubicacion = {
   ciudad: "Santa Cruz de la Sierra, Bolivia",
   coordenadas: { lat: LAT, lng: LNG },
   horarios: [
-    { dias: "Lunes a Viernes", apertura: "07:00", cierre: "19:00" },
+    { dias: "Lunes a Viernes", apertura: "09:00", cierre: "16:00" },
+    { dias: "Sábado", apertura: "09:00", cierre: "12:00" },
   ],
   googleMapsUrl: "https://maps.app.goo.gl/MPdTU4TkG2d4U6p89",
   googleMapsEmbedUrl: `https://www.google.com/maps?q=${LAT},${LNG}&hl=es&z=16&output=embed`,

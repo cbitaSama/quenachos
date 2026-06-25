@@ -10,7 +10,7 @@ export const MARCA: Marca = {
   ciudad: "Santa Cruz de la Sierra",
   pais: "Bolivia",
   emailContacto: null,
-  whatsappHorarios: "Lun–Vie 7:00 — 19:00",
+  whatsappHorarios: "Lun–Vie 9:00 — 16:00 · Sáb hasta 12:00",
 };
 
 export async function getMarca(): Promise<Marca> {

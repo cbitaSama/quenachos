@@ -83,6 +83,27 @@ export async function confirmarPedido(pedidoId: string): Promise<ActionResult> {
   };
 }
 
+// Borra un pedido. La RPC devuelve el stock si estaba despachado y bloquea
+// los pedidos ya facturados (esos se manejan desde Cuentas). Destructivo: la UI
+// confirma antes de llamarla.
+export async function eliminarPedido(pedidoId: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!pedidoId) return { ok: false, error: "Falta el pedido." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_eliminar_pedido", {
+    p_pedido_id: pedidoId,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/pedidos");
+  revalidatePath("/admin/inventario");
+  return { ok: true, message: "Pedido eliminado." };
+}
+
 // Resuelve una atención humana → reactiva el bot para ese cliente.
 export async function resolverAtencion(id: string): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
