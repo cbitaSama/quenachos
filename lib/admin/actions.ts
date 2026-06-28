@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { enviarWhatsApp, enviarWhatsAppImagen, aChatId, QR_PAGO_URL } from "@/lib/waha";
+import { enviarWhatsApp, enviarWhatsAppImagen, aChatId, QR_PAGO_URL, QR_PAGO_SIN_FACTURA_URL } from "@/lib/waha";
 import { setBotActivo } from "@/lib/n8n";
 import { getAdmin, isDbConfigured } from "./db";
 
@@ -308,6 +308,7 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
     error?: string;
     total_bs?: number;
     empresa?: string;
+    sin_factura?: boolean;
     total_bolsas?: number;
     detalle?: { sabor: string; cantidad: number; subtotal: number }[];
     contactos?: { telefono: string; nombre: string }[];
@@ -331,8 +332,10 @@ export async function cobrarCuenta(clienteId: string): Promise<ActionResult> {
   let qrOk = false;
   if (chatId) {
     avisado = await enviarWhatsApp(chatId, texto);
-    if (QR_PAGO_URL.startsWith("http")) {
-      qrOk = await enviarWhatsAppImagen(chatId, QR_PAGO_URL, "QR para el pago de tu cuenta");
+    // Proveedor sin factura (empresa sin NIT) → QR a la otra cuenta; el resto, el de siempre.
+    const qrUrl = r.sin_factura ? QR_PAGO_SIN_FACTURA_URL : QR_PAGO_URL;
+    if (qrUrl.startsWith("http")) {
+      qrOk = await enviarWhatsAppImagen(chatId, qrUrl, "QR para el pago de tu cuenta");
     }
   }
 
@@ -454,15 +457,23 @@ export async function setDireccionCuenta(input: {
   return { ok: true, message: "Dirección actualizada." };
 }
 
-// QR de pago: la imagen que el bot manda al cliente. Darko la cambia desde /admin/ajustes.
-// Se guarda siempre en la misma ruta pública que usa el bot (qn-assets/qr-pago.jpeg).
+// QR de pago: las imágenes que el bot manda al cliente. Darko las cambia desde /admin/ajustes.
+// Se guardan en las rutas públicas que usan el bot y el cobro del panel:
+//  - "normal"      → qn-assets/qr-pago.jpeg (pedidos normales y proveedor con factura).
+//  - "sin_factura" → qn-assets/qr-pago-sin-factura.jpeg (solo proveedor sin factura).
 const QR_BUCKET = "qn-assets";
-const QR_PATH = "qr-pago.jpeg";
+const QR_PATHS = {
+  normal: "qr-pago.jpeg",
+  sin_factura: "qr-pago-sin-factura.jpeg",
+} as const;
+type QrTipo = keyof typeof QR_PATHS;
 
 export async function actualizarQrPago(formData: FormData): Promise<ActionResult> {
   if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
   const email = await adminEmail();
   if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const tipo: QrTipo = formData.get("tipo") === "sin_factura" ? "sin_factura" : "normal";
 
   const file = formData.get("qr");
   if (!(file instanceof File) || file.size === 0) {
@@ -478,7 +489,7 @@ export async function actualizarQrPago(formData: FormData): Promise<ActionResult
   const bytes = new Uint8Array(await file.arrayBuffer());
   const { error } = await getAdmin()
     .storage.from(QR_BUCKET)
-    .upload(QR_PATH, bytes, { upsert: true, contentType: file.type });
+    .upload(QR_PATHS[tipo], bytes, { upsert: true, contentType: file.type });
   if (error) return { ok: false, error: clean(error.message) };
 
   revalidatePath("/admin/ajustes");

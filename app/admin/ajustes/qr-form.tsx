@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { UploadCloud } from "lucide-react";
 import { actualizarQrPago } from "@/lib/admin/actions";
 
-export function QrForm() {
+export function QrForm({ tipo = "normal" }: { tipo?: "normal" | "sin_factura" }) {
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -21,6 +21,7 @@ export function QrForm() {
         }
         const fd = new FormData();
         fd.append("qr", file);
+        fd.append("tipo", tipo);
         start(async () => {
           setMsg(null);
           const r = await actualizarQrPago(fd);

@@ -53,5 +53,9 @@ export function aChatId(telefono: string | null | undefined): string | null {
   return tel ? `${tel}@c.us` : null;
 }
 
-// URL pública del QR de pago (bucket qn-assets es público).
-export const QR_PAGO_URL = `${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "")}/storage/v1/object/public/qn-assets/qr-pago.jpeg`;
+// URLs públicas de los QR de pago (bucket qn-assets es público).
+// - QR_PAGO_URL: normal / con factura (pedidos normales y proveedor con factura).
+// - QR_PAGO_SIN_FACTURA_URL: solo para proveedor SIN factura (cuenta a otro destino).
+const QR_BASE = `${(process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "")}/storage/v1/object/public/qn-assets`;
+export const QR_PAGO_URL = `${QR_BASE}/qr-pago.jpeg`;
+export const QR_PAGO_SIN_FACTURA_URL = `${QR_BASE}/qr-pago-sin-factura.jpeg`;
