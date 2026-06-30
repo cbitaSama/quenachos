@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, Phone, MapPin, Send, AlertTriangle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Phone,
+  MapPin,
+  Send,
+  AlertTriangle,
+  CalendarClock,
+} from "lucide-react";
 import type {
   CuentaCorriente,
   FacturaAbierta,
@@ -16,9 +24,24 @@ import {
   eliminarCuenta,
   pagarFactura,
   quitarContacto,
+  setCicloCuenta,
   setDireccionCuenta,
 } from "@/lib/admin/actions";
 import { Badge, Card, EmptyState, Field, inputClass } from "@/components/admin/ui";
+
+// Etiqueta legible del ciclo de cobro.
+function cicloLabel(c: { ciclo: string; cadaDias: number | null }): string {
+  switch (c.ciclo) {
+    case "dias":
+      return `Cada ${c.cadaDias ?? "?"} días`;
+    case "consignacion":
+      return "A consignación";
+    case "trimestral":
+      return "Trimestral";
+    default:
+      return "Mensual";
+  }
+}
 
 export function CuentasClient({
   cuentas,
@@ -138,14 +161,21 @@ function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
             {cuenta.razonSocial ?? cuenta.nombre ?? "Cliente"}
           </p>
           <div className="mt-0.5 flex flex-wrap items-center gap-2 text-body-sm text-[var(--color-gris-500)]">
-            <span>Ciclo {cuenta.ciclo}</span>
-            {cuenta.venceHoy ? (
+            <span>{cicloLabel(cuenta)}</span>
+            {cuenta.ciclo === "consignacion" ? (
+              <span>· cobrás cuando reconcilias</span>
+            ) : cuenta.venceHoy ? (
               <Badge tone="danger">Vence hoy</Badge>
-            ) : (
+            ) : cuenta.diasParaCorte != null ? (
               <span>
-                corte día {cuenta.diaCorte} · en {cuenta.diasParaCorte} día
+                {cuenta.ciclo === "dias"
+                  ? "próximo corte"
+                  : `corte día ${cuenta.diaCorte}`}{" "}
+                · en {cuenta.diasParaCorte} día
                 {cuenta.diasParaCorte === 1 ? "" : "s"}
               </span>
+            ) : (
+              <span>· sin consumo este ciclo</span>
             )}
           </div>
         </div>
@@ -191,6 +221,7 @@ function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
       {/* Factura abierta esperando pago */}
       {fa && <FacturaAbiertaBlock factura={fa} />}
 
+      <CicloEditor cuenta={cuenta} />
       <DireccionEditor cuenta={cuenta} />
       <ContactosManager cuenta={cuenta} />
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-negro)]/10 pt-3">
@@ -373,6 +404,7 @@ function NuevaCuentaForm() {
     telefono: "",
     ciclo: "mensual",
     diaCorte: "1",
+    cadaDias: "15",
     direccion: "",
     gps: "",
     nit: "",
@@ -402,13 +434,14 @@ function NuevaCuentaForm() {
                 telefono: f.telefono,
                 ciclo: f.ciclo,
                 diaCorte: Number(f.diaCorte) || 1,
+                cadaDias: f.ciclo === "dias" ? Number(f.cadaDias) || null : null,
                 direccion: f.direccion,
                 gps: f.gps,
                 nit: f.nit,
               });
               setMsg(r.ok ? { ok: true, text: r.message ?? "Listo" } : { ok: false, text: r.error });
               if (r.ok) {
-                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", direccion: "", gps: "", nit: "" });
+                setF({ razonSocial: "", contacto: "", telefono: "", ciclo: "mensual", diaCorte: "1", cadaDias: "15", direccion: "", gps: "", nit: "" });
                 setOpen(false);
               }
             });
@@ -426,13 +459,27 @@ function NuevaCuentaForm() {
           </Field>
           <Field label="Ciclo de cobro">
             <select className={inputClass} value={f.ciclo} onChange={set("ciclo")}>
-              <option value="mensual">Mensual</option>
+              <option value="mensual">Mensual (día del mes)</option>
+              <option value="dias">Cada N días</option>
+              <option value="consignacion">A consignación</option>
               <option value="trimestral">Trimestral</option>
             </select>
           </Field>
-          <Field label="Día de corte">
-            <input type="number" min={1} max={28} className={inputClass} value={f.diaCorte} onChange={set("diaCorte")} />
-          </Field>
+          {(f.ciclo === "mensual" || f.ciclo === "trimestral") && (
+            <Field label="Día de corte">
+              <input type="number" min={1} max={28} className={inputClass} value={f.diaCorte} onChange={set("diaCorte")} />
+            </Field>
+          )}
+          {f.ciclo === "dias" && (
+            <Field label="Cada cuántos días">
+              <input type="number" min={1} className={inputClass} value={f.cadaDias} onChange={set("cadaDias")} placeholder="Ej. 15" />
+            </Field>
+          )}
+          {f.ciclo === "consignacion" && (
+            <div className="flex items-end pb-1 text-body-sm text-[var(--color-gris-500)]">
+              Sin corte fijo: cobrás cuando reconcilias.
+            </div>
+          )}
           <Field label="Dirección de entrega (siempre la misma)">
             <input className={inputClass} value={f.direccion} onChange={set("direccion")} placeholder="5to anillo, av..." />
           </Field>
@@ -454,6 +501,99 @@ function NuevaCuentaForm() {
         </form>
       )}
     </Card>
+  );
+}
+
+function CicloEditor({ cuenta }: { cuenta: CuentaCorriente }) {
+  const [open, setOpen] = useState(false);
+  const [pending, start] = useTransition();
+  const [ciclo, setCiclo] = useState(cuenta.ciclo);
+  const [diaCorte, setDiaCorte] = useState(String(cuenta.diaCorte ?? 1));
+  const [cadaDias, setCadaDias] = useState(String(cuenta.cadaDias ?? 15));
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-gris-500)] hover:text-[var(--color-negro)]"
+      >
+        <CalendarClock className="size-3.5" strokeWidth={2.25} /> Cambiar ciclo de
+        cobro ({cicloLabel(cuenta)})
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-xl bg-[var(--color-negro)]/[0.03] p-3">
+      <p className="mb-2 flex items-center gap-1.5 text-caption text-[var(--color-gris-500)]">
+        <CalendarClock className="size-3.5" /> Ciclo de cobro
+      </p>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          start(async () => {
+            setMsg(null);
+            const r = await setCicloCuenta({
+              clienteId: cuenta.clienteId,
+              ciclo,
+              diaCorte: Number(diaCorte) || 1,
+              cadaDias: Number(cadaDias) || null,
+            });
+            setMsg(r.ok ? { ok: true, text: r.message ?? "Guardado" } : { ok: false, text: r.error });
+            if (r.ok) setOpen(false);
+          });
+        }}
+        className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center"
+      >
+        <select className={inputClass} value={ciclo} onChange={(e) => setCiclo(e.target.value)}>
+          <option value="mensual">Mensual (día del mes)</option>
+          <option value="dias">Cada N días</option>
+          <option value="consignacion">A consignación</option>
+          <option value="trimestral">Trimestral</option>
+        </select>
+        {(ciclo === "mensual" || ciclo === "trimestral") && (
+          <input
+            type="number"
+            min={1}
+            max={28}
+            className={`${inputClass} w-32`}
+            value={diaCorte}
+            onChange={(e) => setDiaCorte(e.target.value)}
+            placeholder="Día"
+            aria-label="Día de corte"
+          />
+        )}
+        {ciclo === "dias" && (
+          <input
+            type="number"
+            min={1}
+            className={`${inputClass} w-36`}
+            value={cadaDias}
+            onChange={(e) => setCadaDias(e.target.value)}
+            placeholder="Cada X días"
+            aria-label="Cada cuántos días"
+          />
+        )}
+        {ciclo === "consignacion" && (
+          <span className="text-body-sm text-[var(--color-gris-500)]">
+            Sin corte fijo: cobrás cuando reconcilias.
+          </span>
+        )}
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-full bg-[var(--color-negro)] px-4 py-2.5 text-body-sm font-semibold text-[var(--color-crema)] disabled:opacity-60"
+        >
+          {pending ? "…" : "Guardar"}
+        </button>
+        <button type="button" onClick={() => setOpen(false)} className="text-body-sm text-[var(--color-gris-500)]">
+          Cancelar
+        </button>
+      </form>
+      <Msg msg={msg} />
+    </div>
   );
 }
 

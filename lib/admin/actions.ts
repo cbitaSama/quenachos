@@ -417,6 +417,7 @@ export async function crearCuenta(input: {
   telefono?: string | null;
   ciclo?: string;
   diaCorte?: number;
+  cadaDias?: number | null;
   direccion?: string | null;
   gps?: string | null;
   nit?: string | null;
@@ -434,6 +435,7 @@ export async function crearCuenta(input: {
     p_telefono: input.telefono?.trim() || null,
     p_ciclo: input.ciclo || "mensual",
     p_dia_corte: input.diaCorte ?? 1,
+    p_cada_dias: input.cadaDias ?? null,
     p_direccion: input.direccion?.trim() || null,
     p_gps: safeUrl(input.gps),
     p_nit: input.nit?.trim() || null,
@@ -442,6 +444,35 @@ export async function crearCuenta(input: {
 
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Cuenta corriente creada." };
+}
+
+// Cambia el ciclo de cobro de una cuenta existente.
+//  - 'mensual' / 'trimestral' → corte por día del mes (diaCorte).
+//  - 'dias'                   → cada N días (cadaDias), anclado al primer pedido sin facturar.
+//  - 'consignacion'           → sin corte fijo, se cobra a demanda.
+export async function setCicloCuenta(input: {
+  clienteId: string;
+  ciclo: string;
+  diaCorte?: number | null;
+  cadaDias?: number | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.clienteId) return { ok: false, error: "Falta la cuenta." };
+  if (!(await adminEmail())) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+  if (input.ciclo === "dias" && !(Number(input.cadaDias) > 0)) {
+    return { ok: false, error: 'Para "cada N días" poné un número de días mayor a 0.' };
+  }
+
+  const { error } = await getAdmin().rpc("qn_set_ciclo_cuenta", {
+    p_cliente_id: input.clienteId,
+    p_ciclo: input.ciclo,
+    p_dia_corte: input.diaCorte ?? null,
+    p_cada_dias: input.ciclo === "dias" ? Math.floor(Number(input.cadaDias)) : null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Ciclo de cobro actualizado." };
 }
 
 export async function agregarContacto(input: {

@@ -85,10 +85,12 @@ export type CuentaCorriente = {
   consumoCicloBs: number;
   pedidosSinFacturar: number;
   totalAdeudadoBs: number;
-  ciclo: string;
+  ciclo: string; // 'mensual' | 'trimestral' | 'dias' | 'consignacion'
   diaCorte: number;
+  cadaDias: number | null; // periodo en días cuando ciclo === 'dias'
+  proximoCorte: string | null; // fecha ISO del próximo corte (solo ciclo 'dias' con consumo)
   venceHoy: boolean;
-  diasParaCorte: number;
+  diasParaCorte: number | null; // null en 'consignacion' o 'dias' sin consumo
   direccionEntrega: string | null;
   gpsEntrega: string | null;
   facturaAbierta: FacturaAbierta | null;
