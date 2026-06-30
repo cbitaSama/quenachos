@@ -222,6 +222,50 @@ export async function registrarVentaFisica(input: {
   return { ok: true, message: "Venta registrada y descontada del stock." };
 }
 
+// Venta directa desde el panel: cobro al instante (mostrador, contado) o cargada
+// a la cuenta de un proveedor (queda como deuda en su cuenta corriente).
+// Regla de precio: >=25 bolsas → precio proveedor; el flag con/sin factura elige el tier.
+// La mercadería ya salió → la RPC descuenta stock al instante (no pasa por el bot).
+export async function registrarVentaDirecta(input: {
+  items: { saborId: string; cantidad: number }[];
+  clienteId?: string | null; // null/undefined → mostrador (contado)
+  conFactura?: boolean;
+  nota?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const items = (input.items ?? [])
+    .filter((i) => i.saborId && Number(i.cantidad) > 0)
+    .map((i) => ({ sabor_id: i.saborId, cantidad: Math.floor(Number(i.cantidad)) }));
+  if (items.length === 0) return { ok: false, error: "Agregá al menos un producto." };
+
+  const { data, error } = await getAdmin().rpc("qn_registrar_venta_directa", {
+    p_items: items,
+    p_cliente_id: input.clienteId || null,
+    p_con_factura: !!input.conFactura,
+    p_admin: email,
+    p_nota: input.nota?.trim() || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  const r = data as { total_bs?: number; modalidad?: string } | null;
+  const totalTxt = `Bs ${Number(r?.total_bs ?? 0).toLocaleString("es-BO")}`;
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/venta-fisica");
+  revalidatePath("/admin/inventario");
+  revalidatePath("/admin/cuentas");
+  return {
+    ok: true,
+    message:
+      r?.modalidad === "cuenta_corriente"
+        ? `Cargado a la cuenta: ${totalTxt} de deuda. Stock descontado.`
+        : `Venta registrada por ${totalTxt} y descontada del stock.`,
+  };
+}
+
 // Corrige una producción cargada por error (ajusta el stock).
 export async function editarProduccion(input: {
   movId: string;

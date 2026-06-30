@@ -1,15 +1,27 @@
-import { getSaboresVenta, getVentasFisicas } from "@/lib/admin/queries";
+import {
+  getCuentasPorCobrar,
+  getSaboresVenta,
+  getVentasFisicas,
+} from "@/lib/admin/queries";
 import { formatBs, formatFechaHora } from "@/lib/admin/format";
 import { Card, EmptyState } from "@/components/admin/ui";
+import type { CuentaVentaOption } from "@/lib/admin/types";
 import { VentaFisicaForm } from "./venta-fisica-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function VentaFisicaPage() {
-  const [sabores, ventas] = await Promise.all([
+  const [sabores, ventas, cuentas] = await Promise.all([
     getSaboresVenta(),
     getVentasFisicas(),
+    getCuentasPorCobrar(),
   ]);
+
+  const cuentaOptions: CuentaVentaOption[] = cuentas.map((c) => ({
+    clienteId: c.clienteId,
+    nombre: c.razonSocial || c.nombre || "Cuenta",
+    nit: c.nit,
+  }));
 
   return (
     <div className="space-y-7">
@@ -18,16 +30,17 @@ export default async function VentaFisicaPage() {
           Venta física
         </h1>
         <p className="mt-1 text-body-sm text-[var(--color-gris-500)]">
-          Vendés en persona y se descuenta del stock al instante. Sin pasar por
-          el bot ni comprobante.
+          Vendés en persona y se descuenta del stock al instante. Cobro al
+          instante (mostrador) o a la cuenta de un proveedor (queda como deuda).
+          Desde 25 bolsas se aplica precio proveedor.
         </p>
       </header>
 
-      <Card title="Registrar venta en persona">
+      <Card title="Registrar venta">
         {sabores.length === 0 ? (
           <EmptyState>Conectá la base para registrar ventas.</EmptyState>
         ) : (
-          <VentaFisicaForm sabores={sabores} />
+          <VentaFisicaForm sabores={sabores} cuentas={cuentaOptions} />
         )}
       </Card>
 

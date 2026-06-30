@@ -21,7 +21,20 @@ export type LoteAlerta = {
 
 export type PedidoItem = { sabor: string; cantidad: number };
 
-export type SaborPrecio = { id: string; nombre: string; precio: number };
+export type SaborPrecio = {
+  id: string;
+  nombre: string;
+  precio: number; // precio normal (cliente)
+  precioProveedor: number; // proveedor SIN factura (>=25 bolsas)
+  precioProveedorFactura: number; // proveedor CON factura (>=25 bolsas)
+};
+
+// Cuenta de proveedor a la que se le puede cargar una venta directa como deuda.
+export type CuentaVentaOption = {
+  clienteId: string;
+  nombre: string;
+  nit: string | null; // con NIT => factura por defecto
+};
 
 export type VentaFisicaRow = {
   id: string;
