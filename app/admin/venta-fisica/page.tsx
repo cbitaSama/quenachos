@@ -68,9 +68,21 @@ export default async function VentaFisicaPage() {
                       {formatFechaHora(v.createdAt)}
                     </td>
                     <td className="px-4 py-2.5">
-                      {v.items
-                        .map((it) => `${it.cantidad}× ${it.sabor}`)
-                        .join(", ")}
+                      <ul className="grid gap-0.5">
+                        {v.items.map((it, i) => (
+                          <li key={`${it.sabor}-${i}`} className="text-[var(--color-gris-500)]">
+                            <span className="font-semibold text-[var(--color-negro)]">
+                              {it.cantidad}
+                            </span>{" "}
+                            × {it.sabor}
+                            {it.precioUnit != null && ` · ${formatBs(it.precioUnit)} c/u`}
+                            {" = "}
+                            <span className="tabular-nums">
+                              {formatBs(it.subtotal ?? (it.precioUnit ?? 0) * it.cantidad)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     </td>
                     <td className="px-4 py-2.5 text-[var(--color-gris-500)]">
                       {v.nota ?? "—"}

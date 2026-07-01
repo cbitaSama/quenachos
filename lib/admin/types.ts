@@ -19,14 +19,74 @@ export type LoteAlerta = {
   cantidad: number;
 };
 
-export type PedidoItem = { sabor: string; cantidad: number };
+export type PedidoItem = {
+  sabor: string;
+  cantidad: number;
+  precioUnit?: number; // Bs por bolsa (para el desglose transparente)
+  subtotal?: number; // cantidad × precioUnit
+};
 
 export type SaborPrecio = {
   id: string;
   nombre: string;
-  precio: number; // precio normal (cliente)
+  precio: number; // cliente normal CON factura (precio de lista)
+  precioSinFactura: number; // cliente normal SIN factura
   precioProveedor: number; // proveedor SIN factura (>=25 bolsas)
   precioProveedorFactura: number; // proveedor CON factura (>=25 bolsas)
+};
+
+// Fila del editor de precios (4 tiers por sabor, editables por el dueño).
+export type PrecioRow = {
+  id: string;
+  nombre: string;
+  precioSinFactura: number; // cliente normal SIN factura
+  precioConFactura: number; // cliente normal CON factura
+  precioProvSinFactura: number; // proveedor SIN factura (>=25)
+  precioProvConFactura: number; // proveedor CON factura (>=25)
+};
+
+// ── Gastos / Empleados / Finanzas ───────────────────────────────────────────
+
+export type CategoriaGasto = {
+  id: string;
+  nombre: string;
+  esSistema: boolean;
+};
+
+export type EmpleadoRow = {
+  id: string;
+  nombre: string;
+  pagoDiaBs: number | null;
+  activo: boolean;
+  pagadoMesBs: number; // total pagado en el mes actual
+  diasMes: number; // jornales registrados este mes
+};
+
+export type GastoRow = {
+  id: string;
+  fecha: string;
+  categoria: string;
+  categoriaId: string;
+  empleado: string | null;
+  empleadoId: string | null;
+  descripcion: string | null;
+  montoBs: number;
+  nota: string | null;
+};
+
+export type FinanzasBucket = {
+  inicio: string;
+  fin: string;
+  ingresos: number;
+  egresos: number;
+  neto: number;
+};
+
+export type FinanzasData = {
+  modo: string; // 'mensual' | 'trimestral' | 'semestral' | 'anual'
+  buckets: FinanzasBucket[];
+  porCategoria: { categoria: string; total: number }[];
+  totales: { ingresos: number; egresos: number; neto: number };
 };
 
 // Cuenta de proveedor a la que se le puede cargar una venta directa como deuda.

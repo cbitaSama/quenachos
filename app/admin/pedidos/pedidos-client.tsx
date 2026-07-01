@@ -4,8 +4,9 @@ import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { Check, Trash2 } from "lucide-react";
 import type { PedidoAdmin } from "@/lib/admin/types";
 import { confirmarPedido, eliminarPedido } from "@/lib/admin/actions";
-import { formatBs, formatFechaHora } from "@/lib/admin/format";
+import { formatFechaHora } from "@/lib/admin/format";
 import { Badge, EmptyState } from "@/components/admin/ui";
+import { Desglose } from "@/components/admin/desglose";
 
 // Ahora separamos por TIPO DE CLIENTE (no por estado, que mareaba).
 const GRUPOS = [
@@ -194,11 +195,10 @@ function FilaPedido({
             {ESTADO_LABEL[p.estado] ?? p.estado}
           </Badge>
         </div>
-        <p className="text-body-sm text-[var(--color-gris-500)]">
-          {formatBs(p.totalBs)} ·{" "}
-          {p.items.map((it) => `${it.sabor} x${it.cantidad}`).join(", ") || "—"}
-        </p>
-        <p className="text-[11px] text-[var(--color-gris-500)]">
+        <div className="mt-1.5 max-w-sm">
+          <Desglose items={p.items} total={p.totalBs} compact />
+        </div>
+        <p className="mt-1 text-[11px] text-[var(--color-gris-500)]">
           {p.origen} · {formatFechaHora(p.createdAt)}
         </p>
         {(p.telefono || p.direccionTexto || p.gpsUrl) && (

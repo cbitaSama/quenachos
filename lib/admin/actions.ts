@@ -603,3 +603,204 @@ export async function pagarFactura(input: {
   revalidatePath("/admin/cuentas");
   return { ok: true, message: "Pago confirmado. Deuda saldada." };
 }
+
+// ── Precios (editor de 4 tiers por sabor) ────────────────────────────────────
+
+export async function actualizarPrecios(input: {
+  saborId: string;
+  sinFactura: number;
+  conFactura: number;
+  provSinFactura: number;
+  provConFactura: number;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.saborId) return { ok: false, error: "Falta el sabor." };
+  const vals = [input.sinFactura, input.conFactura, input.provSinFactura, input.provConFactura];
+  if (vals.some((v) => !(Number(v) > 0))) {
+    return { ok: false, error: "Todos los precios deben ser mayores a 0." };
+  }
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_set_precios", {
+    p_sabor_id: input.saborId,
+    p_sin_factura: input.sinFactura,
+    p_con_factura: input.conFactura,
+    p_prov_sin: input.provSinFactura,
+    p_prov_con: input.provConFactura,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo guardar." };
+
+  revalidatePath("/admin/precios");
+  revalidatePath("/admin/venta-fisica");
+  return { ok: true, message: "Precios actualizados. El bot ya los usa." };
+}
+
+// ── Gastos / Empleados ───────────────────────────────────────────────────────
+
+export async function registrarGasto(input: {
+  categoriaId: string;
+  descripcion?: string | null;
+  monto: number;
+  fecha?: string | null;
+  nota?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.categoriaId) return { ok: false, error: "Elegí una categoría." };
+  if (!(Number(input.monto) > 0)) return { ok: false, error: "Poné un monto mayor a 0." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_registrar_gasto", {
+    p_categoria_id: input.categoriaId,
+    p_descripcion: input.descripcion?.trim() || null,
+    p_monto: input.monto,
+    p_fecha: input.fecha || null,
+    p_nota: input.nota?.trim() || null,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo registrar." };
+
+  revalidatePath("/admin/gastos");
+  revalidatePath("/admin/finanzas");
+  return { ok: true, message: "Gasto registrado." };
+}
+
+export async function editarGasto(input: {
+  id: string;
+  categoriaId: string;
+  descripcion?: string | null;
+  monto: number;
+  fecha?: string | null;
+  nota?: string | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.id) return { ok: false, error: "Falta el gasto." };
+  if (!(Number(input.monto) > 0)) return { ok: false, error: "Monto inválido." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_editar_gasto", {
+    p_id: input.id,
+    p_categoria_id: input.categoriaId || null,
+    p_descripcion: input.descripcion?.trim() || null,
+    p_monto: input.monto,
+    p_fecha: input.fecha || null,
+    p_nota: input.nota?.trim() || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo editar." };
+
+  revalidatePath("/admin/gastos");
+  revalidatePath("/admin/finanzas");
+  return { ok: true, message: "Gasto actualizado." };
+}
+
+export async function eliminarGasto(id: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!id) return { ok: false, error: "Falta el gasto." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_eliminar_gasto", { p_id: id });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo eliminar." };
+
+  revalidatePath("/admin/gastos");
+  revalidatePath("/admin/finanzas");
+  return { ok: true, message: "Gasto eliminado." };
+}
+
+export async function crearCategoriaGasto(nombre: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!nombre?.trim()) return { ok: false, error: "Poné un nombre." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_crear_categoria_gasto", {
+    p_nombre: nombre.trim(),
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo crear." };
+
+  revalidatePath("/admin/gastos");
+  return { ok: true, message: "Categoría creada." };
+}
+
+export async function crearEmpleado(input: {
+  nombre: string;
+  pagoDia?: number | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.nombre?.trim()) return { ok: false, error: "Poné el nombre del empleado." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_crear_empleado", {
+    p_nombre: input.nombre.trim(),
+    p_pago_dia: input.pagoDia && input.pagoDia > 0 ? input.pagoDia : null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo crear." };
+
+  revalidatePath("/admin/gastos");
+  return { ok: true, message: "Empleado agregado." };
+}
+
+export async function setEmpleadoActivo(input: {
+  id: string;
+  activo: boolean;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.id) return { ok: false, error: "Falta el empleado." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_set_empleado_activo", {
+    p_id: input.id,
+    p_activo: input.activo,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo actualizar." };
+
+  revalidatePath("/admin/gastos");
+  return {
+    ok: true,
+    message: input.activo ? "Empleado reactivado." : "Empleado marcado como inactivo.",
+  };
+}
+
+// Registra el jornal de un empleado para un día (solo los días que se trabajó).
+export async function pagarJornal(input: {
+  empleadoId: string;
+  fecha?: string | null;
+  monto?: number | null;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  if (!input.empleadoId) return { ok: false, error: "Falta el empleado." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_pagar_jornal", {
+    p_empleado_id: input.empleadoId,
+    p_fecha: input.fecha || null,
+    p_monto: input.monto && input.monto > 0 ? input.monto : null,
+    p_admin: email,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo registrar el jornal." };
+
+  revalidatePath("/admin/gastos");
+  revalidatePath("/admin/finanzas");
+  return { ok: true, message: "Jornal registrado." };
+}

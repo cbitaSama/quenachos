@@ -1,13 +1,18 @@
 import { getAdmin, isDbConfigured } from "./db";
 import type {
   AtencionRow,
+  CategoriaGasto,
   CuentaCorriente,
   DashboardData,
+  EmpleadoRow,
   FacturaAdmin,
+  FinanzasData,
+  GastoRow,
   LoteAlerta,
   MovimientoAdmin,
   PedidoAdmin,
   PorSabor,
+  PrecioRow,
   SaborPrecio,
   SaborStock,
   VentaFisicaRow,
@@ -160,4 +165,35 @@ export async function getFacturas(): Promise<FacturaAdmin[]> {
 export async function getAtencion(): Promise<AtencionRow[]> {
   const data = await rpc<AtencionRow[]>("qn_atencion_humana");
   return data ?? [];
+}
+
+// ── Precios (editor de 4 tiers) ──────────────────────────────────────────────
+
+export async function getPrecios(): Promise<PrecioRow[]> {
+  const data = await rpc<PrecioRow[]>("qn_precios");
+  return data ?? [];
+}
+
+// ── Gastos / Empleados / Finanzas ────────────────────────────────────────────
+
+export async function getCategoriasGasto(): Promise<CategoriaGasto[]> {
+  const data = await rpc<CategoriaGasto[]>("qn_categorias_gasto");
+  return data ?? [];
+}
+
+export async function getEmpleados(): Promise<EmpleadoRow[]> {
+  const data = await rpc<EmpleadoRow[]>("qn_empleados");
+  return data ?? [];
+}
+
+export async function getGastos(desde?: string, hasta?: string): Promise<GastoRow[]> {
+  const data = await rpc<GastoRow[]>("qn_gastos", {
+    p_desde: desde ?? null,
+    p_hasta: hasta ?? null,
+  });
+  return data ?? [];
+}
+
+export async function getFinanzas(modo: string, n = 6): Promise<FinanzasData | null> {
+  return rpc<FinanzasData>("qn_finanzas", { p_modo: modo, p_n: n });
 }

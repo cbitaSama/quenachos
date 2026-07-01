@@ -42,10 +42,10 @@ export function VentaFisicaForm({
     setConFactura(Boolean(c?.nit));
   };
 
-  // Precio unitario según el tier vigente (mismo criterio que la base y el bot).
+  // Precio unitario según el tier vigente (4 tiers, mismo criterio que la base y el bot).
   const precioUnit = (s: SaborPrecio): number => {
-    if (!esProveedor) return s.precio;
-    return conFactura ? s.precioProveedorFactura : s.precioProveedor;
+    if (esProveedor) return conFactura ? s.precioProveedorFactura : s.precioProveedor;
+    return conFactura ? s.precio : s.precioSinFactura;
   };
 
   const total = useMemo(
@@ -63,7 +63,7 @@ export function VentaFisicaForm({
       const r = await registrarVentaDirecta({
         items,
         clienteId: clienteId || null,
-        conFactura: esProveedor ? conFactura : false,
+        conFactura,
         nota: nota || null,
       });
       setMsg(r.ok ? { ok: true, text: r.message ?? "Listo" } : { ok: false, text: r.error });
@@ -160,13 +160,14 @@ export function VentaFisicaForm({
         })}
       </ul>
 
-      {/* Con / sin factura — solo cuando aplica precio proveedor (>=25 bolsas) */}
-      {esProveedor && (
-        <div className="grid gap-2 rounded-2xl border border-[var(--color-rojo)]/20 bg-[var(--color-rojo)]/[0.04] p-4">
-          <p className="text-body-sm font-medium">
-            Precio proveedor (desde {UMBRAL_PROVEEDOR} bolsas)
-          </p>
-          <div className="grid grid-cols-2 gap-2">
+      {/* Con / sin factura — aplica a toda venta (define el precio y el QR). */}
+      <div className="grid gap-2 rounded-2xl border border-[var(--color-rojo)]/20 bg-[var(--color-rojo)]/[0.04] p-4">
+        <p className="text-body-sm font-medium">
+          {esProveedor
+            ? `Precio proveedor (desde ${UMBRAL_PROVEEDOR} bolsas)`
+            : "Precio normal"}
+        </p>
+        <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setConFactura(false)}
@@ -191,9 +192,8 @@ export function VentaFisicaForm({
             >
               Con factura
             </button>
-          </div>
         </div>
-      )}
+      </div>
 
       <Field label="Nota (opcional) — ej. quién se lo llevó">
         <input
@@ -204,6 +204,28 @@ export function VentaFisicaForm({
           placeholder="Ej. Juan (trabajador)"
         />
       </Field>
+
+      {totalBolsas > 0 && (
+        <div className="grid gap-1 rounded-2xl border border-[var(--color-negro)]/10 bg-white px-4 py-3">
+          {sabores
+            .filter((s) => (cant[s.id] ?? 0) > 0)
+            .map((s) => {
+              const n = cant[s.id] ?? 0;
+              return (
+                <div
+                  key={s.id}
+                  className="flex items-baseline justify-between gap-3 text-body-sm text-[var(--color-gris-500)]"
+                >
+                  <span>
+                    <span className="font-semibold text-[var(--color-negro)]">{n}</span> × {s.nombre}{" "}
+                    · {formatBs(precioUnit(s))} c/u
+                  </span>
+                  <span className="tabular-nums">{formatBs(n * precioUnit(s))}</span>
+                </div>
+              );
+            })}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[var(--color-negro)]/[0.03] px-4 py-3">
         <span className="text-body-sm text-[var(--color-gris-500)]">

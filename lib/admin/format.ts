@@ -24,6 +24,15 @@ export function formatFechaHora(d: string | Date | null | undefined): string {
   });
 }
 
+// Formatea una fecha "YYYY-MM-DD" (sin hora) sin correrla por zona horaria.
+export function formatDia(d: string | null | undefined): string {
+  if (!d) return "—";
+  const [y, m, day] = d.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !day) return "—";
+  const date = new Date(y, m - 1, day);
+  return date.toLocaleDateString("es-BO", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export type EstadoVencimiento = "vencido" | "pronto" | "ok";
 
 // dias < 0 → vencido (rojo) · ≤30 → pronto (amarillo) · resto → ok
