@@ -14,6 +14,7 @@ import {
   Tags,
   Banknote,
   TrendingUp,
+  CircleHelp,
 } from "lucide-react";
 
 const ITEMS = [
@@ -28,6 +29,7 @@ const ITEMS = [
   { href: "/admin/finanzas", label: "Finanzas", icon: TrendingUp },
   { href: "/admin/precios", label: "Precios", icon: Tags },
   { href: "/admin/ajustes", label: "Ajustes", icon: QrCode },
+  { href: "/admin/ayuda", label: "Ayuda", icon: CircleHelp },
 ];
 
 export function AdminNav({

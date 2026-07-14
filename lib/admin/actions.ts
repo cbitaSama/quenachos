@@ -844,3 +844,46 @@ export async function pagarJornal(input: {
   revalidatePath("/admin/finanzas");
   return { ok: true, message: "Jornal registrado." };
 }
+
+// ── Ayuda ─────────────────────────────────────────────────────────────────────
+
+// Chat de ayuda del panel: manda la pregunta (+ manual como contexto) al proxy
+// de n8n "Nachito Ayuda", que consulta Gemini con la credencial del proyecto.
+const AYUDA_WEBHOOK_URL =
+  process.env.N8N_AYUDA_WEBHOOK_URL ??
+  "https://n8n.vectoria.space/webhook/nachos-ayuda-k7w2m9x4";
+
+export async function preguntarAyuda(input: {
+  pregunta: string;
+  historial: { rol: "user" | "model"; texto: string }[];
+}): Promise<{ ok: true; respuesta: string } | { ok: false; error: string }> {
+  const pregunta = (input.pregunta || "").trim().slice(0, 1000);
+  if (!pregunta) return { ok: false, error: "Escribí tu pregunta." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { AYUDA_SISTEMA } = await import("./manual");
+  try {
+    const res = await fetch(AYUDA_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sistema: AYUDA_SISTEMA,
+        historial: (input.historial ?? []).slice(-8),
+        pregunta,
+      }),
+      signal: AbortSignal.timeout(35000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = (await res.json()) as { respuesta?: string };
+    const respuesta = (data.respuesta || "").trim();
+    if (!respuesta) throw new Error("respuesta vacía");
+    return { ok: true, respuesta };
+  } catch {
+    return {
+      ok: false,
+      error:
+        "No pude responder ahora. Probá de nuevo en un ratito, o revisá la guía de arriba — y si sigue sin andar, escribile a Sebas.",
+    };
+  }
+}
