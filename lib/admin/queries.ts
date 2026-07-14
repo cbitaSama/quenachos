@@ -15,6 +15,7 @@ import type {
   PrecioRow,
   SaborPrecio,
   SaborStock,
+  SilenciadoRow,
   VentaFisicaRow,
 } from "./types";
 
@@ -164,6 +165,11 @@ export async function getFacturas(): Promise<FacturaAdmin[]> {
 
 export async function getAtencion(): Promise<AtencionRow[]> {
   const data = await rpc<AtencionRow[]>("qn_atencion_humana");
+  return data ?? [];
+}
+
+export async function getSilenciados(): Promise<SilenciadoRow[]> {
+  const data = await rpc<SilenciadoRow[]>("qn_silenciados");
   return data ?? [];
 }
 

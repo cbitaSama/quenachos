@@ -148,6 +148,46 @@ export async function pausarNumero(input: {
   };
 }
 
+// Silencio permanente: el bot ignora el número por completo (sin cola, sin avisos).
+// Para contactos que NO debe atender el bot: abogado, proveedores que maneja el dueño, etc.
+export async function silenciarNumero(input: {
+  telefono: string;
+  etiqueta?: string;
+}): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const tel = (input.telefono || "").replace(/\D/g, "");
+  if (!tel) return { ok: false, error: "Poné un número válido (solo dígitos)." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { data, error } = await getAdmin().rpc("qn_silenciar_numero", {
+    p_telefono: tel,
+    p_etiqueta: input.etiqueta || null,
+  });
+  if (error) return { ok: false, error: clean(error.message) };
+  const r = data as { ok?: boolean; error?: string } | null;
+  if (!r?.ok) return { ok: false, error: r?.error ?? "No se pudo silenciar." };
+
+  revalidatePath("/admin/atencion");
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "Listo. El bot va a ignorar ese número (sin avisos)." };
+}
+
+export async function quitarSilencio(telefono: string): Promise<ActionResult> {
+  if (!isDbConfigured) return { ok: false, error: "Base de datos no configurada." };
+  const tel = (telefono || "").replace(/\D/g, "");
+  if (!tel) return { ok: false, error: "Falta el número." };
+  const email = await adminEmail();
+  if (!email) return { ok: false, error: "Tu sesión expiró. Volvé a entrar." };
+
+  const { error } = await getAdmin().rpc("qn_quitar_silencio", { p_telefono: tel });
+  if (error) return { ok: false, error: clean(error.message) };
+
+  revalidatePath("/admin/atencion");
+  revalidatePath("/admin/cuentas");
+  return { ok: true, message: "El bot vuelve a atender ese número." };
+}
+
 // Enciende/apaga el bot completo (workflow de n8n). Off = no responde a nadie.
 export async function toggleBotGlobal(active: boolean): Promise<ActionResult> {
   const email = await adminEmail();

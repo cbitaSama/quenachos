@@ -1,12 +1,13 @@
-import { getCuentasPorCobrar, getFacturas } from "@/lib/admin/queries";
+import { getCuentasPorCobrar, getFacturas, getSilenciados } from "@/lib/admin/queries";
 import { CuentasClient } from "./cuentas-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function CuentasPage() {
-  const [cuentas, facturas] = await Promise.all([
+  const [cuentas, facturas, silenciados] = await Promise.all([
     getCuentasPorCobrar(),
     getFacturas(),
+    getSilenciados(),
   ]);
 
   return (
@@ -22,7 +23,11 @@ export default async function CuentasPage() {
         </p>
       </header>
 
-      <CuentasClient cuentas={cuentas} facturas={facturas} />
+      <CuentasClient
+        cuentas={cuentas}
+        facturas={facturas}
+        silenciados={silenciados.map((s) => s.telefono)}
+      />
     </div>
   );
 }

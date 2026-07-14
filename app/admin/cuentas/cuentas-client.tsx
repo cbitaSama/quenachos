@@ -9,6 +9,8 @@ import {
   Send,
   AlertTriangle,
   CalendarClock,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import type {
   CuentaCorriente,
@@ -24,8 +26,10 @@ import {
   eliminarCuenta,
   pagarFactura,
   quitarContacto,
+  quitarSilencio,
   setCicloCuenta,
   setDireccionCuenta,
+  silenciarNumero,
 } from "@/lib/admin/actions";
 import { Badge, Card, EmptyState, Field, inputClass } from "@/components/admin/ui";
 
@@ -46,9 +50,11 @@ function cicloLabel(c: { ciclo: string; cadaDias: number | null }): string {
 export function CuentasClient({
   cuentas,
   facturas,
+  silenciados = [],
 }: {
   cuentas: CuentaCorriente[];
   facturas: FacturaAdmin[];
+  silenciados?: string[];
 }) {
   const totalAdeudado = cuentas.reduce((s, c) => s + c.totalAdeudadoBs, 0);
   const vencenHoy = cuentas.filter((c) => c.venceHoy && c.consumoCicloBs > 0);
@@ -114,7 +120,9 @@ export function CuentasClient({
             Sin cuentas todavía. Creá una arriba para habilitar pedidos a crédito.
           </EmptyState>
         ) : (
-          cuentas.map((c) => <CuentaCard key={c.clienteId} cuenta={c} />)
+          cuentas.map((c) => (
+            <CuentaCard key={c.clienteId} cuenta={c} silenciados={silenciados} />
+          ))
         )}
       </section>
 
@@ -145,7 +153,13 @@ function Msg({ msg }: { msg: { ok: boolean; text: string } | null }) {
   );
 }
 
-function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
+function CuentaCard({
+  cuenta,
+  silenciados = [],
+}: {
+  cuenta: CuentaCorriente;
+  silenciados?: string[];
+}) {
   const fa = cuenta.facturaAbierta;
   return (
     <div
@@ -223,7 +237,7 @@ function CuentaCard({ cuenta }: { cuenta: CuentaCorriente }) {
 
       <CicloEditor cuenta={cuenta} />
       <DireccionEditor cuenta={cuenta} />
-      <ContactosManager cuenta={cuenta} />
+      <ContactosManager cuenta={cuenta} silenciados={silenciados} />
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-negro)]/10 pt-3">
         <CerrarFacturaForm clienteId={cuenta.clienteId} />
         <EliminarCuentaBtn
@@ -636,11 +650,34 @@ function DireccionEditor({ cuenta }: { cuenta: CuentaCorriente }) {
   );
 }
 
-function ContactosManager({ cuenta }: { cuenta: CuentaCorriente }) {
+function ContactosManager({
+  cuenta,
+  silenciados = [],
+}: {
+  cuenta: CuentaCorriente;
+  silenciados?: string[];
+}) {
   const [pending, start] = useTransition();
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // estado local para reflejar el toggle sin esperar el refresh del server
+  const [silenciadosLocal, setSilenciadosLocal] = useState<string[]>(silenciados);
+  const estaSilenciado = (tel: string) =>
+    silenciadosLocal.includes((tel || "").replace(/\D/g, ""));
+  const toggleSilencio = (ct: { nombre: string; telefono: string }) => {
+    const tel = (ct.telefono || "").replace(/\D/g, "");
+    start(async () => {
+      setError(null);
+      const r = estaSilenciado(tel)
+        ? await quitarSilencio(tel)
+        : await silenciarNumero({ telefono: tel, etiqueta: `${ct.nombre} (${cuenta.razonSocial ?? "cuenta"})` });
+      if (!r.ok) { setError(r.error); return; }
+      setSilenciadosLocal((l) =>
+        l.includes(tel) ? l.filter((x) => x !== tel) : [...l, tel],
+      );
+    });
+  };
 
   return (
     <div className="rounded-xl bg-[var(--color-negro)]/[0.03] p-3">
@@ -660,15 +697,48 @@ function ContactosManager({ cuenta }: { cuenta: CuentaCorriente }) {
                     encargado de cobro
                   </span>
                 )}
+                {estaSilenciado(ct.telefono) && (
+                  <span className="ml-1.5 rounded-full bg-[var(--color-rojo)]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-rojo)]">
+                    bot silenciado
+                  </span>
+                )}
               </span>
-              <button
-                type="button"
-                aria-label={`Quitar ${ct.nombre}`}
-                onClick={() => start(async () => { await quitarContacto(ct.id); })}
-                className="text-[var(--color-gris-500)] hover:text-[var(--color-rojo)]"
-              >
-                <Trash2 className="size-4" strokeWidth={2.25} />
-              </button>
+              <span className="flex shrink-0 items-center gap-2.5">
+                <button
+                  type="button"
+                  disabled={pending}
+                  aria-label={
+                    estaSilenciado(ct.telefono)
+                      ? `Activar bot para ${ct.nombre}`
+                      : `Silenciar bot para ${ct.nombre}`
+                  }
+                  title={
+                    estaSilenciado(ct.telefono)
+                      ? "El bot lo ignora — tocá para que vuelva a atenderlo"
+                      : "Silenciar el bot para este contacto (lo atendés vos)"
+                  }
+                  onClick={() => toggleSilencio(ct)}
+                  className={
+                    estaSilenciado(ct.telefono)
+                      ? "text-[var(--color-rojo)] hover:text-[var(--color-gris-500)]"
+                      : "text-[var(--color-gris-500)] hover:text-[var(--color-rojo)]"
+                  }
+                >
+                  {estaSilenciado(ct.telefono) ? (
+                    <BellOff className="size-4" strokeWidth={2.25} />
+                  ) : (
+                    <Bell className="size-4" strokeWidth={2.25} />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Quitar ${ct.nombre}`}
+                  onClick={() => start(async () => { await quitarContacto(ct.id); })}
+                  className="text-[var(--color-gris-500)] hover:text-[var(--color-rojo)]"
+                >
+                  <Trash2 className="size-4" strokeWidth={2.25} />
+                </button>
+              </span>
             </li>
           ))}
         </ul>

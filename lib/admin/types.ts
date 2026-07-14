@@ -180,6 +180,15 @@ export type AtencionRow = {
   createdAt: string;
 };
 
+// Números que el bot ignora por completo (sin cola ni notificación).
+export type SilenciadoRow = {
+  id: string;
+  telefono: string;
+  etiqueta: string | null;
+  nota: string | null;
+  createdAt: string;
+};
+
 export type MovimientoAdmin = {
   id: string;
   sabor: string;

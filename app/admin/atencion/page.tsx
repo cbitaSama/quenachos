@@ -1,12 +1,17 @@
-import { getAtencion } from "@/lib/admin/queries";
+import { getAtencion, getSilenciados } from "@/lib/admin/queries";
 import { getBotActivo } from "@/lib/n8n";
 import { AtencionClient } from "./atencion-client";
 import { BotControl } from "./bot-control";
+import { SilenciadosClient } from "./silenciados-client";
 
 export const dynamic = "force-dynamic";
 
 export default async function AtencionPage() {
-  const [items, botActivo] = await Promise.all([getAtencion(), getBotActivo()]);
+  const [items, silenciados, botActivo] = await Promise.all([
+    getAtencion(),
+    getSilenciados(),
+    getBotActivo(),
+  ]);
 
   return (
     <div className="space-y-7">
@@ -29,6 +34,19 @@ export default async function AtencionPage() {
           Clientes pausados / esperando atención
         </h2>
         <AtencionClient items={items} />
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-caption text-[var(--color-gris-500)]">
+          🔇 Números que el bot ignora siempre
+        </h2>
+        <p className="text-body-sm text-[var(--color-gris-500)]">
+          Para contactos que NO son clientes del bot (tu abogado, proveedores
+          que manejás vos, conocidos). El bot no les responde <strong>nunca</strong>,
+          no te llega aviso y no aparecen en la lista de arriba. Ya no hace
+          falta bloquearlos en WhatsApp.
+        </p>
+        <SilenciadosClient items={silenciados} />
       </section>
     </div>
   );
