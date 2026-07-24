@@ -55,3 +55,34 @@ export const SABOR_COLOR: Record<string, string> = {
   limon: "#A3E635",
   "limon-picante": "#FF1F1F",
 };
+
+// Yango deep link so the owner opens the app straight to a route with the
+// customer's location as destination (pickup = owner's current location).
+// Format from Yango's official partner docs (Adjust go.link). The bare
+// end-lat/end-lon form 404s without the adj_* params; the full form (with
+// adj_fallback web URL) is what actually resolves on device and on the web.
+// gpsUrl comes from the bot as "https://www.google.com/maps?q=LAT,LNG".
+const YANGO_ADJ_TOKEN = "vokme8e_nd9s9z9"; // Yango's public tracker token (from docs)
+
+export function parseLatLng(
+  gpsUrl: string | null | undefined,
+): { lat: string; lng: string } | null {
+  if (!gpsUrl) return null;
+  const m = gpsUrl.match(/[?&]q=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/);
+  if (!m) return null;
+  return { lat: m[1], lng: m[2] };
+}
+
+export function yangoUrl(gpsUrl: string | null | undefined): string | null {
+  const c = parseLatLng(gpsUrl);
+  if (!c) return null;
+  // Web fallback uses lon,lat order (reversed vs the deep link).
+  const fallback = encodeURIComponent(
+    `https://yango.com/en_int/order/?gto=${c.lng},${c.lat}&ref=nachos`,
+  );
+  return (
+    `https://yango.go.link/route?end-lat=${c.lat}&end-lon=${c.lng}` +
+    `&ref=nachos&adj_t=${YANGO_ADJ_TOKEN}&lang=es&adj_deeplink_js=1` +
+    `&adj_fallback=${fallback}`
+  );
+}

@@ -4,7 +4,7 @@ import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { Check, Trash2 } from "lucide-react";
 import type { PedidoAdmin } from "@/lib/admin/types";
 import { confirmarPedido, eliminarPedido } from "@/lib/admin/actions";
-import { formatFechaHora } from "@/lib/admin/format";
+import { formatFechaHora, yangoUrl } from "@/lib/admin/format";
 import { Badge, EmptyState } from "@/components/admin/ui";
 import { Desglose } from "@/components/admin/desglose";
 
@@ -213,6 +213,16 @@ function FilaPedido({
                 className="font-semibold text-[var(--color-rojo)] underline underline-offset-2"
               >
                 Ver GPS
+              </a>
+            )}
+            {yangoUrl(p.gpsUrl) && (
+              <a
+                href={yangoUrl(p.gpsUrl)!}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[var(--color-rojo)] underline underline-offset-2"
+              >
+                🛵 Pedir Yango
               </a>
             )}
           </div>
