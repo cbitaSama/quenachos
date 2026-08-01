@@ -15,6 +15,7 @@ import {
   Banknote,
   TrendingUp,
   CircleHelp,
+  MessageSquare,
 } from "lucide-react";
 
 const ITEMS = [
@@ -24,6 +25,7 @@ const ITEMS = [
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { href: "/admin/venta-fisica", label: "Venta física", icon: Store },
   { href: "/admin/atencion", label: "Atención", icon: LifeBuoy },
+  { href: "/admin/chat", label: "Chat", icon: MessageSquare },
   { href: "/admin/cuentas", label: "Cuentas", icon: Wallet },
   { href: "/admin/gastos", label: "Gastos", icon: Banknote },
   { href: "/admin/finanzas", label: "Finanzas", icon: TrendingUp },

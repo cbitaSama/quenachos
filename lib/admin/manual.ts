@@ -42,6 +42,19 @@ Truco importante: si VOS le respondés a mano a un cliente desde el WhatsApp del
 ¿Cuál uso? Pausa = algo temporal que estás atendiendo vos. Silenciado = para siempre (hasta que lo saques).`,
   },
   {
+    id: "chat",
+    emoji: "💬",
+    titulo: "Chat — leer tus conversaciones de WhatsApp",
+    resumen: "Mirá qué habló Nachito con cada cliente, sin sacar el celular.",
+    contenido: `• A la izquierda están las conversaciones, la más reciente arriba. Tocá una y a la derecha ves los mensajes.
+• Buscador arriba: escribí el nombre o el número y filtra.
+• El número que aparece en verde a la derecha de un chat es cuántos mensajes no leíste.
+
+⚠️ Esta pantalla es SOLO PARA LEER. Para responderle a un cliente, escribile desde WhatsApp en tu celular (arriba del chat hay un link que te lo abre directo).
+
+¿Por qué no se puede responder desde acá? Porque cuando VOS le escribís a mano desde el celular, el bot se calla solo 3 horas en esa conversación para no pisarte. Si el mensaje saliera desde el panel, el bot no se enteraría y le contestaría encima al cliente.`,
+  },
+  {
     id: "pedidos",
     emoji: "📦",
     titulo: "Pedidos — confirmar pagos",
