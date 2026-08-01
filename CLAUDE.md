@@ -1479,3 +1479,49 @@ Ninguno de estos bloquea el desarrollo del MVP. Trabajar con placeholders y reem
 ---
 
 **Fin del archivo. Última actualización: 2026-05-21.**
+
+---
+
+## 💬 Sección Chat del panel — historial propio (2026-08-01)
+
+**Qué hay:** `/admin/chat` muestra las conversaciones de WhatsApp del negocio,
+solo para LEER. Para responder se contesta desde el celular — así el bot se
+calla solo 3h en ese chat (pausa del dueño) y no le escribe encima al cliente.
+
+**De dónde salen los mensajes — y por qué NO de WAHA.** La sesión `Nachito`
+corre con motor NOWEB **sin el "store"**, así que WAHA no guarda ni devuelve
+chats (`/chats` y `/chats/overview` responden 400). Es la ÚNICA sesión así: las
+otras tres (`MARKART`, `VectoriaSpaceCorp`, `Vectoria-publicidad-landings`) se
+crearon desde la CRM, que activa el store al crear. Por eso desde la CRM sí se
+ven chats y desde este panel no se veían.
+⛔ **No se puede activar el store en Nachito.** La doc oficial de WAHA es
+explícita: *no se cambia después de escanear el QR* (se puede perder el
+historial) y no hay endpoint para actualizarlo — habría que crear la sesión de
+nuevo, o sea **QR nuevo**, sobre el bot vivo de un cliente que paga.
+
+**La salida (y sale mejor):** guardamos nosotros cada mensaje cuando pasa.
+- `quenachos.mensajes` + `qn_log_mensaje` / `qn_chats` / `qn_mensajes`
+  (`supabase/qn-mensajes.sql`, 100% aditivo).
+- `app/api/wh/mensajes` = oyente. **No responde ni manda nada**; ante cualquier
+  error devuelve `ok` igual, para que WAHA nunca marque la sesión con
+  problemas. Exige `WA_LOG_SECRET` y solo acepta la sesión de este negocio.
+  Resuelve el teléfono real en chats `@lid`.
+- Ventaja sobre WAHA: el historial es del cliente, permanente, buscable, y
+  sobrevive a cualquier re-vinculación de WhatsApp.
+
+**Cómo quedó conectado (2026-08-01, hecho y verificado):**
+- `WA_LOG_SECRET` en Vercel (proyecto `quenachos`, producción).
+- Webhook **agregado** a la sesión Nachito por `PUT /api/sessions/Nachito`
+  → `https://www.quenachos.com/api/wh/mensajes?s=<secreto>` con `message` +
+  `message.any`. **Se conservó el webhook del bot** (`n8n…/webhook/nachos`).
+- Verificado: la sesión volvió a `WORKING` en 3s, **mismo número, sin QR**, y
+  con los 2 webhooks. Probado el guardado de punta a punta con payloads
+  sintéticos (sin mandar un solo WhatsApp) y limpiados después.
+- Respaldo de la config previa: `Nachos/backups/waha-Nachito-config-2026-08-01.json`.
+
+⚠️ **El historial arranca de cero el 2026-08-01.** Lo anterior no existe: nadie
+lo estaba guardando. Usar `www.quenachos.com` (el apex redirige 308).
+
+**Lección:** cambiar los *webhooks* de una sesión con `PUT /api/sessions/{name}`
+es seguro y no pide QR; cambiar el **store** sí obliga a re-vincular. No son lo
+mismo aunque las dos sean "config de la sesión".
