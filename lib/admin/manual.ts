@@ -52,6 +52,8 @@ Truco importante: si VOS le respondés a mano a un cliente desde el WhatsApp del
 
 ⚠️ Esta pantalla es SOLO PARA LEER. Para responderle a un cliente, escribile desde WhatsApp en tu celular (arriba del chat hay un link que te lo abre directo).
 
+Las charlas se guardan desde el día que activamos esto: lo de antes no aparece, porque WhatsApp no lo guardaba.
+
 ¿Por qué no se puede responder desde acá? Porque cuando VOS le escribís a mano desde el celular, el bot se calla solo 3 horas en esa conversación para no pisarte. Si el mensaje saliera desde el panel, el bot no se enteraría y le contestaría encima al cliente.`,
   },
   {

@@ -1,4 +1,10 @@
-import { getChats, getMensajes, motivoSinChat } from "@/lib/waha";
+import {
+  getChats,
+  getMensajes,
+  getChatsGuardados,
+  getMensajesGuardados,
+  motivoSinChat,
+} from "@/lib/waha";
 import { ChatClient } from "./chat-client";
 
 /**
@@ -22,13 +28,22 @@ export default async function ChatPage({
   searchParams: Promise<{ c?: string }>;
 }) {
   const { c } = await searchParams;
-  const chats = await getChats();
-  const motivo = motivoSinChat();
+  // Fuente principal: NUESTRO historial (quenachos.mensajes), que se llena con
+  // cada mensaje que pasa. Si algún día la sesión de WhatsApp sí guarda las
+  // charlas, se usa eso en su lugar sin cambiar nada más.
+  let chats = await getChatsGuardados();
+  let propio = chats.length > 0;
+  if (!propio) chats = await getChats();
+  const motivo = propio ? "ok" : motivoSinChat();
   // El chat abierto: el pedido por la URL si existe en la lista, o el primero.
   // Se valida contra la lista para que nadie pueda pedir una conversación que
   // no es de este número escribiendo cualquier cosa en la barra de direcciones.
   const activo = chats.find((x) => x.id === c) ?? chats[0] ?? null;
-  const mensajes = activo ? await getMensajes(activo.id) : [];
+  const mensajes = !activo
+    ? []
+    : propio
+      ? await getMensajesGuardados(activo.telefono)
+      : await getMensajes(activo.id);
 
   return (
     <div className="space-y-5">

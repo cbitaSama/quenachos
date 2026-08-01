@@ -184,3 +184,67 @@ export async function getMensajes(chatId: string, limite = 60): Promise<MensajeC
     }))
     .sort((a, b) => (a.cuando ?? 0) - (b.cuando ?? 0));
 }
+
+// ───────────────────────────────────────────────────────────────────────────
+// HISTORIAL PROPIO — la fuente de verdad del panel.
+//
+// WAHA no guarda las charlas de esta sesión (motor NOWEB sin "store", y no se
+// puede activar sin QR nuevo sobre el bot vivo). Así que el historial lo
+// guardamos nosotros: cada mensaje entra por /api/wh/mensajes y vive en
+// `quenachos.mensajes`. Estas funciones lo leen.
+// ───────────────────────────────────────────────────────────────────────────
+
+type FilaChat = { telefono: string; nombre: string; ultimo: string | null; mio: boolean; cuando: string };
+type FilaMsg = { id: number; mio: boolean; texto: string | null; tipo: string; cuando: string };
+
+const ms = (iso: string | null | undefined): number | null => {
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  return Number.isNaN(t) ? null : t;
+};
+
+/** Las conversaciones guardadas, de la más reciente a la más vieja. */
+export async function getChatsGuardados(limite = 50): Promise<ChatResumen[]> {
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/server");
+    const { data } = await createAdminClient().rpc("qn_chats", { p_limite: limite });
+    const filas = (data ?? []) as FilaChat[];
+    return filas.map((c) => ({
+      id: `${c.telefono}@c.us`,
+      nombre: c.nombre,
+      telefono: c.telefono,
+      // Marcamos lo que mandó el negocio para que se lea como en WhatsApp.
+      ultimoMensaje: c.mio ? `Vos: ${c.ultimo ?? ""}` : (c.ultimo ?? ""),
+      cuando: ms(c.cuando),
+      sinLeer: 0,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** Los mensajes guardados de una conversación, del más viejo al más nuevo. */
+export async function getMensajesGuardados(telefono: string, limite = 150): Promise<MensajeChat[]> {
+  try {
+    const { createAdminClient } = await import("@/lib/supabase/server");
+    const { data } = await createAdminClient().rpc("qn_mensajes", {
+      p_telefono: telefono,
+      p_limite: limite,
+    });
+    const filas = (data ?? []) as FilaMsg[];
+    return filas.map((m) => ({
+      id: String(m.id),
+      mio: m.mio,
+      texto: m.texto ?? "—",
+      cuando: ms(m.cuando),
+      tipo: m.tipo,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** ¿Ya está guardándose el historial? Lo usa la pantalla para explicar el vacío. */
+export async function hayHistorial(): Promise<boolean> {
+  return (await getChatsGuardados(1)).length > 0;
+}

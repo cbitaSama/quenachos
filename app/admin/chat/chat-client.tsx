@@ -59,9 +59,9 @@ export function ChatClient({
           "Cuando alguien le escriba al WhatsApp del negocio, la charla aparece acá.",
       },
       "sin-almacen": {
-        titulo: "Falta activar el historial",
+        titulo: "Empezando a guardar tus charlas",
         detalle:
-          "Tu WhatsApp está conectado y el bot funciona normal, pero hoy no guarda el historial de las charlas, así que no hay nada que mostrar acá todavía. Activarlo lleva un momento y hay que volver a escanear el código QR una vez — avisanos y lo coordinamos para hacerlo en un horario tranquilo.",
+          "Tu WhatsApp está conectado y el bot funciona normal. Desde ahora vamos a ir guardando cada conversación acá, así que en cuanto entre el próximo mensaje empezás a verlas. Las charlas de antes de hoy no están: WhatsApp no las guardaba.",
       },
       "sin-configurar": {
         titulo: "Falta conectar el WhatsApp",
